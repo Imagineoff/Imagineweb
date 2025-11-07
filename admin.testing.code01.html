@@ -412,7 +412,7 @@ function handleSubmit(code){
 }
 
 /* ========= Loading flow (fake) ========= */
-function showLoader(duration=2400, cb){
+function showLoader(duration=30000, cb){
   loaderWrap.classList.add('show');
   let start = Date.now();
   const tick = setInterval(()=>{
