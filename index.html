@@ -252,6 +252,13 @@
       .spiral{ width:300px; height:300px; opacity:0.15; }
       .cursor-halo{ width:120px; height:120px; }
     }
+    #patreonMessage.show {
+  right: 1rem;
+  transition: right 0.8s ease-out;
+}
+#supportBtn {
+  cursor:pointer;
+}
   </style>
 </head>
 <body>
@@ -756,6 +763,25 @@ function typeWriter() {
 }
 
 typeWriter();
+      // show message from right after load
+window.addEventListener('DOMContentLoaded', () => {
+  const msg = document.getElementById('patreonMessage');
+  setTimeout(() => { msg.classList.add('show'); }, 500); // objeví se po půl sekundě
+});
+
+// add click sound to Patreon button
+const supportBtn = document.getElementById('supportBtn');
+supportBtn.addEventListener('click', (e)=>{
+  // CRT style beep
+  if(!audioCtx) initAudio();
+  const g = audioCtx.createGain(); g.gain.value = 0.06;
+  g.connect(audioCtx.destination);
+  const o = audioCtx.createOscillator();
+  o.type = 'square'; o.frequency.value = 880;
+  o.connect(g);
+  o.start();
+  o.stop(audioCtx.currentTime + 0.08);
+});
 </script>
 </body>
 </html>
