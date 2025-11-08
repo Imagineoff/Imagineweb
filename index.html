@@ -7,614 +7,356 @@
   <meta name="description" content="Silent Studio — psycho-horror game studio crafting unsettling experiences." />
   <meta name="theme-color" content="#000000" />
   <link rel="icon" href="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/IMG_4254.png" />
-  <meta property="og:title" content="Silent Studio — Game Studio" />
-  <meta property="og:description" content="Psycho-horror game studio crafting unsettling experiences." />
-  <meta property="og:image" content="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/IMG_4254.png" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Silent Studio — Game Studio" />
-  <meta name="twitter:description" content="Psycho-horror game studio crafting unsettling experiences." />
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/IMG_4254.png" />
 
+  <!-- Fonts: Orbitron pro logo, Inter pro tělo -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
   <style>
+    /* =========================
+       VARIABLES / SYSTEM COLORS
+       ========================= */
     :root{
-      --bg:#000;
-      --muted:#666;
-      --accent:#9bf;
-      --white: #fff;
+      --bg: #000000;
+      --panel: rgba(255,255,255,0.02);
       --glass: rgba(255,255,255,0.03);
-      --glass-2: rgba(255,255,255,0.02);
-    }
-    html,body{
-      margin:0; padding:0;
-      height:100%;
-      background:var(--bg);
-      color:var(--white);
-      font-family: 'Inter', sans-serif;
-      -webkit-font-smoothing:antialiased;
-      overflow-x:hidden;
+      --muted: #9a9a9a;
+      --accent: #7fe7ff;
+      --accent-2: #d68bff;
+      --white: #ffffff;
+      --terminal-bg: #050505;
+      --terminal-fore: #8affff;
+      --radius: 12px;
+      --max-width: 1100px;
     }
 
-    /* Header GIF */
-    header{
+    /* =========================
+       RESET / BASE
+       ========================= */
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{
+      background: var(--bg);
+      color:var(--white);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow-x:hidden;
+      line-height:1.45;
+    }
+
+    /* CONTAINER */
+    .wrap{
+      max-width:var(--max-width);
+      margin: 0 auto;
+      padding: 36px 20px;
       position:relative;
-      width:100%;
-      height:55vh;
-      overflow:hidden;
+    }
+
+    /* =========================
+       HERO
+       ========================= */
+    header.hero{
+      position:relative;
+      height:48vh;
       display:flex;
       align-items:center;
       justify-content:center;
-    }
-    header img{
-      width:120%;
-      height:120%;
-      object-fit:cover;
-      transform: scale(1.02);
-      filter: brightness(0.6) contrast(1.05);
-      transition: transform 8s linear;
-    }
-    header.parallax img { transform: translateY(-6%) scale(1.05); }
-
-    /* main layout */
-    main{
-      position:relative;
-      z-index:2;
-      max-width:1200px;
-      margin: -8vh auto 4rem;
-      padding: 2.5rem;
-      text-align:center;
-    }
-
-    h1 {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(2rem, 3.5vw, 3.4rem);
-      letter-spacing: 3px;
-      margin:0 0 .4rem;
-      display:inline-block;
-      position:relative;
-      color:var(--white);
-    }
-
-    /* glitch effect */
-    .glitch {
-      position:relative;
-      display:inline-block;
-      line-height:1;
-      cursor:default;
-    }
-    .glitch::before, .glitch::after {
-      content: attr(data-text);
-      position:absolute;
-      left:0; top:0;
-      width:100%;
-      pointer-events:none;
-      mix-blend-mode: screen;
-      opacity:0.7;
-    }
-    .glitch::before{
-      transform: translate(-2px, -2px);
-      color: #f0f;
-      clip-path: polygon(0 0,100% 0,100% 45%,0 50%);
-      animation: glitchTop 3.5s infinite linear;
-    }
-    .glitch::after{
-      transform: translate(2px, 2px);
-      color: #0ff;
-      clip-path: polygon(0 60%,100% 55%,100% 100%,0 100%);
-      animation: glitchBot 4s infinite linear;
-    }
-    @keyframes glitchTop {
-      0%{ transform:translate(-2px,-2px) }
-      25%{ transform:translate(-6px,-1px) }
-      50%{ transform:translate(-2px,-2px) }
-      75%{ transform:translate(-3px,-4px) }
-      100%{ transform:translate(-2px,-2px) }
-    }
-    @keyframes glitchBot {
-      0%{ transform:translate(2px,2px) }
-      20%{ transform:translate(6px,1px) }
-      40%{ transform:translate(2px,2px) }
-      70%{ transform:translate(4px,5px) }
-      100%{ transform:translate(2px,2px) }
-    }
-
-    p.lead {
-      color:#cfcfcf;
-      max-width:760px;
-      margin:1rem auto 0;
-      font-size:1.05rem;
-    }
-
-    section.card {
-      margin:2.75rem auto;
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border:1px solid rgba(255,255,255,0.03);
-      padding:1.2rem;
-      border-radius:10px;
-      box-shadow: 0 6px 30px rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-    }
-
-    #widgets {
-      display:grid;
-      grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
-      gap:1rem;
-      margin-top:1rem;
-    }
-
-    .widget {
-      padding:1rem;
-      min-height:140px;
-      position:relative;
       overflow:hidden;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,0.02);
-      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      border-radius:16px;
+      margin-bottom:24px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.03);
+      box-shadow:0 18px 60px rgba(0,0,0,0.7);
     }
-
-    .widget h3 { margin:0 0 .6rem; font-family: 'Orbitron', sans-serif; font-size:1rem; letter-spacing:1px; }
-
-    footer {
-      text-align:center;
-      padding:2rem;
-      color:var(--muted);
-      font-size:.9rem;
+    .hero__img{
+      position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+      filter:brightness(.56) contrast(1.05);
+      transform: scale(1.03);
+      transition: transform 8s linear, filter .35s ease;
     }
-
-    /* spiral canvas */
-    .spiral {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 480px;
-      height: 480px;
-      transform: translate(-50%, -50%);
-      opacity: 0.22;
-      z-index:0;
-      pointer-events:none;
-      filter: blur(0.6px) contrast(1.1);
-    }
-
-    /* cursor halo */
-    .cursor-halo{
-      position: fixed;
-      pointer-events: none;
-      z-index: 9999;
-      left:0; top:0;
-      transform: translate(-50%,-50%);
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 40%, transparent 60%);
-      mix-blend-mode: screen;
-      transition: width .15s ease, height .15s ease, opacity .15s ease;
-      will-change: transform;
-    }
-
-    /* email link */
-    #email { cursor:pointer; text-decoration:underline; }
-
-    /* modal */
-    .modal-backdrop{
-      position:fixed; inset:0; z-index:9998;
-      background: rgba(0,0,0,0.7);
-      display:flex; align-items:center; justify-content:center;
-      opacity:0; pointer-events:none; transition:opacity .25s ease;
-    }
-    .modal-backdrop.show{ opacity:1; pointer-events:auto; }
-    .modal {
-      width: min(720px, 92%);
-      background: linear-gradient(180deg, rgba(10,10,10,0.98), rgba(0,0,0,0.85));
+    .hero__panel{
+      position:relative; z-index:3; text-align:center; padding:22px;
+      backdrop-filter: blur(6px);
       border-radius:10px;
-      padding:1.25rem;
-      border: 1px solid rgba(255,255,255,0.03);
-      box-shadow: 0 20px 80px rgba(0,0,0,0.8);
-      transform: scale(.98);
-      transition: transform .2s ease;
+      background: linear-gradient(180deg, rgba(10,10,10,0.45), rgba(0,0,0,0.25));
+      border:1px solid rgba(255,255,255,0.02);
     }
-    .modal-backdrop.show .modal { transform: scale(1); }
+    h1.logo{
+      font-family:Orbitron,monospace;
+      font-size: clamp(28px, 4.2vw, 48px);
+      letter-spacing:3px;
+      margin:0;
+      display:inline-block;
+    }
+    p.lead{
+      margin:10px 0 0;
+      color:#cfcfcf;
+      max-width:780px;
+    }
 
-    .terminal {
-      height: 260px;
-      background: #020202;
-      color: #8affff;
-      padding: .8rem;
-      font-family: monospace;
-      border-radius:6px;
+    /* subtle CRT scanline for atmosphere */
+    .scanline{
+      position:absolute; inset:0; pointer-events:none;
+      background-image: linear-gradient(transparent 50%, rgba(255,255,255,0.012) 51%);
+      background-size: 100% 4px;
+      mix-blend-mode: screen;
+      z-index:2; opacity:.6;
+    }
+
+    /* =========================
+       GRID: main content
+       ========================= */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:18px;
+      align-items:start;
+    }
+
+    /* left column: content cards */
+    .col-left{min-width:0}
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.006));
+      border:1px solid rgba(255,255,255,0.03);
+      padding:18px;
+      border-radius:var(--radius);
+      margin-bottom:16px;
+    }
+    .card h2{
+      margin:0 0 10px; font-family:Orbitron,monospace; letter-spacing:1px; font-size:16px;
+    }
+
+    /* widgets inside */
+    #widgets{
+      display:grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap:12px;
+    }
+    .widget{
+      padding:12px;
+      border-radius:10px;
+      background: rgba(255,255,255,0.01);
+      border:1px solid rgba(255,255,255,0.02);
+      min-height:120px;
+    }
+    .widget h3{ margin:0 0 6px; font-family:Orbitron,monospace; font-size:13px; }
+
+    /* right column: sticky interactions */
+    .col-right{
+      position:relative;
+    }
+    .sticky{
+      position:sticky; top:22px;
+    }
+
+    /* =========================
+       TERMINAL (vylepšený)
+       ========================= */
+    .terminal-wrap{
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .terminal{
+      background:var(--terminal-bg);
+      color:var(--terminal-fore);
+      padding:12px;
+      border-radius:10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+      font-size:13px;
+      height:260px;
       overflow:auto;
       border:1px solid rgba(0,255,255,0.04);
+      box-shadow: inset 0 -8px 40px rgba(0,0,0,0.6);
+      position:relative;
     }
-    .terminal .line { margin: .25rem 0; white-space:pre-wrap; }
+    .terminal .line{ white-space:pre-wrap; margin:.25rem 0; }
+    .terminal .muted{ color:var(--muted); font-size:12px }
+    .terminal .prompt{ color:var(--terminal-fore); }
 
-    .controls { margin-top:.6rem; display:flex; gap:.6rem; justify-content:center; }
+    .terminal-input{
+      display:flex; gap:8px; margin-top:6px;
+    }
+    .terminal-input input{
+      flex:1; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.04);
+      background:#0a0a0a; color:var(--white); font-family:inherit;
+    }
+    .controls{ display:flex; gap:8px; justify-content:flex-end; }
+    .btn{
+      padding:.45rem .8rem; border-radius:8px; background:transparent; color:var(--white);
+      border:1px solid rgba(255,255,255,0.06); cursor:pointer; font-family:inherit;
+    }
+    .btn.ghost{ opacity:.7 }
 
-    .btn {
+    /* flashing caret for UX */
+    .caret{
       display:inline-block;
-      padding:.45rem .8rem; border-radius:6px;
-      background:transparent; color:var(--white);
-      border:1px solid rgba(255,255,255,0.06);
-      cursor:pointer; font-family:inherit;
+      width:8px; height:14px; background:var(--terminal-fore); margin-left:6px;
+      vertical-align:middle;
+      animation: blink .9s steps(2,start) infinite;
     }
-    .btn.ghost { opacity:.7 }
+    @keyframes blink{ 50%{ opacity:0 } }
 
-    /* nightmare mode (hidden initially) */
-    .nightmare {
-      --bg: #070006;
-      background: radial-gradient(circle at 20% 10%, rgba(255,0,120,0.02), transparent 5%);
-      filter: contrast(1.2) saturate(1.05);
+    /* small hint footer */
+    .hint{
+      text-align:center; color:var(--muted); font-size:13px; margin-top:12px;
     }
 
-    /* responsive tweaks */
-    @media (max-width:700px){
-      header{ height:42vh }
-      .spiral{ width:300px; height:300px; opacity:0.15; }
-      .cursor-halo{ width:120px; height:120px; }
+    /* footer */
+    footer{ text-align:center; color:var(--muted); margin-top:22px; font-size:13px; }
+
+    /* responsive */
+    @media (max-width:980px){
+      .grid{ grid-template-columns: 1fr; }
+      .col-right{ order:-1; }
+      header.hero{ height:36vh; }
     }
-   #patreonMessage.show {
-  right: 1rem; /* posune zprávu do viditelné oblasti */
-}
   </style>
 </head>
 <body>
-  <header id="hero">
-    <img src="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/IMG_4251.gif" alt="Silent Studio header" id="heroImg">
-  </header>
+  <div class="wrap">
+    <!-- HERO -->
+    <header class="hero" role="banner" aria-label="Silent Studio hero">
+      <img class="hero__img" id="heroImg" src="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/IMG_4251.gif" alt="Silent Studio header">
+      <div class="scanline" aria-hidden="true"></div>
 
-  <canvas class="spiral" id="spiral"></canvas>
-  <div class="cursor-halo" id="halo" aria-hidden="true"></div>
+      <div class="hero__panel" role="img" aria-label="Silent Studio">
+        <h1 class="logo" aria-hidden="false">Silent Studio</h1>
+        <p class="lead">Psycho-horror game studio crafting unsettling experiences — silence speaks louder than screams.</p>
+      </div>
+    </header>
 
-  <main>
-    <section class="card">
-      <h1 class="glitch" data-text="Silent Studio">Silent Studio</h1>
-      <p class="lead">Psycho-horror game studio crafting unsettling experiences where silence speaks louder than screams.</p>
+    <!-- MAIN GRID -->
+    <div class="grid" role="main">
+      <!-- LEFT: Content -->
+      <div class="col-left">
+        <section class="card" aria-labelledby="about-title">
+          <h2 id="about-title">Manifest</h2>
+          <p style="color:#d0d0d0">Experimentální landing page kombinuje procedurální audio, canvas vizuály a jemné interakce. Zkus terminál (stiskni <code>`</code>) nebo se přidej do komunity.</p>
+        </section>
 
-      <div id="widgets">
-        <div class="widget" id="gamesWidget">
-          <h3>Games</h3>
-          <p id="gamesText">No games available yet. Something stirs beneath the surface…</p>
-          <div style="position:absolute;right:10px;bottom:10px;font-size:.8rem;color:var(--muted)">Preview</div>
+        <section class="card" aria-labelledby="games-title">
+          <h2 id="games-title">Studio</h2>
+          <div id="widgets">
+            <div class="widget" id="gamesWidget">
+              <h3>Games</h3>
+              <p id="gamesText">Žádné vydání zatím. Něco se ale hemží v hloubce…</p>
+              <small style="color:var(--muted)">Preview</small>
+            </div>
+
+            <div class="widget" id="discordWidget">
+              <h3>Community</h3>
+              <!-- zachován původní embed, ale omezujeme výšku -->
+              <iframe title="Discord" src="https://discord.com/widget?id=1433738890421997600&theme=dark"
+                style="width:100%;height:180px;border:0;border-radius:6px;background:transparent;" allowtransparency="true"></iframe>
+            </div>
+
+            <div class="widget" id="contactWidget">
+              <h3>Contact</h3>
+              <p style="margin:0">
+                <button id="emailCopy" class="btn" style="padding:.25rem .5rem;font-size:13px">assist.silent.studio@gmail.com</button>
+              </p>
+              <div style="margin-top:8px; font-size:13px">
+                <a href="https://x.com/_silent_studio" target="_blank" rel="noopener" style="color:var(--accent)">Follow on X</a> •
+                <a href="https://dsc.gg/silent-studio" target="_blank" rel="noopener" style="color:var(--accent)">Join Discord</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="extras-title">
+          <h2 id="extras-title">Extras</h2>
+          <p class="muted" style="color:var(--muted)">Hover widgets, ambient audio a jemné vizuální rušení — vše navrženo tak, aby neubíralo na použitelnosti.</p>
+        </section>
+      </div>
+
+      <!-- RIGHT: Terminal + Support (sticky) -->
+      <aside class="col-right">
+        <div class="sticky">
+          <section class="card terminal-wrap" aria-labelledby="terminal-title">
+            <h2 id="terminal-title">Silent Terminal</h2>
+
+            <div class="terminal" id="terminal" role="log" aria-live="polite">
+              <div class="line muted">Welcome to Silent Studio — type <code>help</code> or press <code>`</code> to open quickly.</div>
+            </div>
+
+            <div class="terminal-input" style="margin-top:8px">
+              <input id="terminalInput" type="text" placeholder="enter command (help, contact, enter, clear, games)" aria-label="Terminal input">
+              <button id="runCmd" class="btn">Run</button>
+            </div>
+
+            <div class="controls" style="margin-top:8px">
+              <button id="downloadLog" class="btn ghost">Download Log</button>
+              <button id="toggleNight" class="btn ghost">Nightmare: OFF</button>
+              <button id="toggleAudio" class="btn ghost">Ambient: ON</button>
+            </div>
+
+            <div class="hint">Tip: stiskni <code>`</code> (backtick) pro otevření terminálu</div>
+          </section>
+
+          <section class="card" aria-labelledby="support-title" style="margin-top:12px">
+            <h2 id="support-title">Support</h2>
+            <p style="margin:0 0 8px">Any support keeps the project alive. We truly appreciate every contribution.</p>
+            <div style="display:flex;gap:8px">
+              <a id="supportBtn" class="btn" href="https://www.patreon.com/Silent_Studio" target="_blank" rel="noopener">Support Us</a>
+              <a class="btn ghost" href="mailto:assist.silent.studio@gmail.com">Email</a>
+            </div>
+          </section>
         </div>
-
-        <div class="widget" id="discordWidget">
-          <h3>Community</h3>
-          <!-- Discord widget using provided server ID -->
-          <iframe title="Discord" src="https://discord.com/widget?id=1433738890421997600&theme=dark"
-                  style="width:100%;height:220px;border:0;border-radius:6px;background:transparent;" allowtransparency="true"></iframe>
-        </div>
-
-        <div class="widget" id="contactWidget">
-          <h3>Contact</h3>
-          <p>
-            <span id="email">assist.silent.studio@gmail.com</span><br>
-            <a href="https://x.com/_silent_studio" target="_blank" rel="noopener">Follow on X</a> •
-            <a href="https://dsc.gg/silent-studio" target="_blank" rel="noopener">Join Discord</a>
-          </p>
-          <div style="position:absolute;right:10px;bottom:10px;font-size:.7rem;color:var(--muted)">Signal</div>
-        </div>
-      </div>
-<div id="patreonMessage" style="
-      position:absolute; 
-      right:-320px; top:1rem; 
-      width:300px;
-      background:rgba(255,255,255,0.03); 
-      padding:1rem; border-radius:6px; 
-      border:1px solid rgba(255,255,255,0.03); 
-      color:var(--white); font-size:.95rem;
-      transition: right 0.8s ease-out;
-    ">
-  Any support keeps the project alive. We truly appreciate every contribution.
-</div>
-  
-  <div style="margin-top:3rem; text-align:center;">
-    <a href="https://www.patreon.com/Silent_Studio" target="_blank" rel="noopener" id="supportBtn" class="btn" style="font-size:1rem; padding:.6rem 1.2rem;">
-      Support Us
-    </a>
-  </div>
-</section>
-      <div style="margin-top:1rem;">
-        <button class="btn" id="openTerminal">Open Terminal</button>
-        <button class="btn ghost" id="toggleAudio">Ambient: ON</button>
-        <button class="btn ghost" id="toggleNight">Nightmare: OFF</button>
-      </div>
-    </section>
-
-    <section class="card" id="about">
-      <h2 style="font-family: 'Orbitron', sans-serif; margin:0 0 .6rem">Manifest</h2>
-      <p style="color:#bbb; max-width:900px; margin:0 auto;">
-        This is an experimental, immersive landing page combining procedural audio, canvas visuals and subtle interactives.
-        Explore. Type into the terminal. Join the discord. Find the things hidden in the margins.
-      </p>
-    </section>
-  </main>
-
-  <footer>
-    <p>© 2025 Silent Studio — Built in the dark.</p>
-  </footer>
-
-  <!-- modal / terminal -->
-  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <h3 id="modalTitle">Silent Terminal</h3>
-      <div class="terminal" id="terminal">
-        <div class="line" data-time><span style="color:#8affff">Welcome to Silent Studio — type <code>help</code></span></div>
-      </div>
-
-      <div style="display:flex;gap:.6rem;margin-top:.6rem;align-items:center;justify-content:center;">
-        <input id="terminalInput" type="text" placeholder="enter command (help, contact, enter, clear)" style="width:60%;padding:.45rem;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:#030303;color:#fff;font-family:monospace;">
-        <button class="btn" id="runCmd">Run</button>
-        <button class="btn ghost" id="closeModal">Close</button>
-      </div>
-      <div class="controls">
-        <button class="btn ghost" id="downloadLog">Download Log</button>
-      </div>
+      </aside>
     </div>
+
+    <footer>
+      <p>© 2025 Silent Studio — Built in the dark.</p>
+    </footer>
   </div>
 
+  <!-- ===============
+       SCRIPTS (modulárně a přehledně)
+       =============== -->
   <script>
-    /**************************************************************************
-     * Utilities & small helpers
-     **************************************************************************/
+    /* =========================
+       HELPERS & SELECTORS
+       ========================= */
     const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
 
-    /* Scroll reveal (simple) */
-    const reveals = document.querySelectorAll('.card, .lead');
-    const obs = new IntersectionObserver(entries=>{
-      entries.forEach(en=>{
-        if(en.isIntersecting) en.target.style.transform = 'translateY(0)';
-      });
-    }, {threshold: .05});
-    reveals.forEach(r => { r.style.transform = 'translateY(18px)'; r.style.transition = 'transform .8s ease'; obs.observe(r); });
+    /* =========================
+       TERMINAL: log, commands, download
+       ========================= */
+    const terminal = $('#terminal');
+    const input = $('#terminalInput');
+    const runBtn = $('#runCmd');
+    const downloadBtn = $('#downloadLog');
+    const emailCopy = $('#emailCopy');
+    const toggleNightBtn = $('#toggleNight');
+    const toggleAudioBtn = $('#toggleAudio');
+    const supportBtn = $('#supportBtn');
+    let logArr = [];
 
-    /**************************************************************************
-     * Ambient audio (procedural) - WebAudio oscillator + noise + LFO
-     **************************************************************************/
-    let audioCtx, masterGain, noiseGain, lfo;
-    let ambientOn = true;
-    function initAudio(){
-      if (audioCtx) return;
-      audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = 0.35;
-      masterGain.connect(audioCtx.destination);
-
-      // create subtle drone using oscillators and LFO
-      const oscA = audioCtx.createOscillator();
-      oscA.type = 'sine'; oscA.frequency.value = 50;
-      const oscB = audioCtx.createOscillator();
-      oscB.type = 'sine'; oscB.frequency.value = 97.3;
-
-      const gainA = audioCtx.createGain(); gainA.gain.value = 0.08;
-      const gainB = audioCtx.createGain(); gainB.gain.value = 0.06;
-
-      // LFO for slow wobble
-      lfo = audioCtx.createOscillator();
-      lfo.frequency.value = 0.05;
-      const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 8;
-
-      lfo.connect(lfoGain);
-      lfoGain.connect(oscA.frequency);
-      lfoGain.connect(oscB.frequency);
-
-      oscA.connect(gainA); gainA.connect(masterGain);
-      oscB.connect(gainB); gainB.connect(masterGain);
-
-      // noise (brown-ish) for texture
-      const bufferSize = 2 * audioCtx.sampleRate;
-      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      let lastOut = 0.0;
-      for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        output[i] = (lastOut + (0.02 * white)) / 1.02;
-        lastOut = output[i];
-        output[i] *= 3.5; // (rough) gain
-      }
-      const noiseNode = audioCtx.createBufferSource();
-      noiseNode.buffer = noiseBuffer;
-      noiseNode.loop = true;
-
-      noiseGain = audioCtx.createGain();
-      noiseGain.gain.value = 0.02;
-      noiseNode.connect(noiseGain); noiseGain.connect(masterGain);
-
-      // start things
-      oscA.start(); oscB.start(); lfo.start(); noiseNode.start();
-      // gently fade in
-      masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
-      masterGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-      masterGain.gain.linearRampToValueAtTime(0.35, audioCtx.currentTime + 2.5);
-    }
-
-    function toggleAudio(){
-      if(!audioCtx) initAudio();
-      if(audioCtx.state === 'suspended'){
-        audioCtx.resume();
-        ambientOn = true;
-        $('#toggleAudio').textContent = 'Ambient: ON';
-      } else {
-        audioCtx.suspend();
-        ambientOn = false;
-        $('#toggleAudio').textContent = 'Ambient: OFF';
-      }
-    }
-
-    // auto-init after first user interaction (allowed by browser policies)
-    const initOnFirstClick = (ev) => {
-      initAudio();
-      document.removeEventListener('pointerdown', initOnFirstClick);
-    };
-    document.addEventListener('pointerdown', initOnFirstClick);
-
-    document.getElementById('toggleAudio').addEventListener('click', toggleAudio);
-
-    /**************************************************************************
-     * Spiral canvas — improved: reacts to mouse and pulse on click
-     **************************************************************************/
-    const canvas = document.getElementById('spiral');
-    const ctx = canvas.getContext('2d');
-    let t = 0;
-    let mouseX = 0, mouseY = 0, mxNorm = 0, myNorm = 0, pulse = 0;
-
-    function resizeCanvas(){
-      const w = canvas.width = canvas.offsetWidth * devicePixelRatio;
-      const h = canvas.height = canvas.offsetHeight * devicePixelRatio;
-      canvas.style.width = canvas.offsetWidth + 'px';
-      canvas.style.height = canvas.offsetHeight + 'px';
-      ctx.setTransform(1,0,0,1,0,0);
-      ctx.scale(devicePixelRatio, devicePixelRatio);
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    window.addEventListener('pointermove', e => {
-      mouseX = e.clientX; mouseY = e.clientY;
-      const rect = canvas.getBoundingClientRect();
-      mxNorm = (mouseX - rect.left) / rect.width - 0.5;
-      myNorm = (mouseY - rect.top) / rect.height - 0.5;
-    });
-
-    window.addEventListener('pointerdown', () => { pulse = 1; if(masterGain) masterGain.gain.cancelScheduledValues(audioCtx.currentTime); });
-
-    function drawSpiral(){
-      const w = canvas.offsetWidth;
-      const h = canvas.offsetHeight;
-      ctx.clearRect(0,0,w,h);
-
-      // center transform
-      ctx.save();
-      ctx.translate(w/2, h/2);
-
-      // rotate slightly based on mouse x
-      const rot = mxNorm * 0.2;
-      ctx.rotate(rot);
-
-      // lines
-      const rings = 480;
-      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-      ctx.lineWidth = 0.9;
-      ctx.beginPath();
-      for (let i=0; i<rings; i++){
-        const angle = i * 0.12 + t * 0.0008;
-        const radius = 1.2 * i * (0.6 + Math.sin(t/200 + i*0.02)*0.01) + Math.sin(i*0.23 + t/40) * (10 + mxNorm*30);
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-      }
-      ctx.stroke();
-
-      // spokes reacting to mouse
-      for(let i=0;i<5;i++){
-        const ang = t*0.01 + i*(Math.PI*2/5);
-        const len = 120 + Math.sin(t/30+i)*60 + myNorm*80;
-        ctx.beginPath();
-        ctx.moveTo(0,0);
-        ctx.lineTo(Math.cos(ang)*len, Math.sin(ang)*len);
-        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-
-      ctx.restore();
-
-      // pulse decay
-      pulse = Math.max(0, pulse - 0.02);
-      t+=1;
-      requestAnimationFrame(drawSpiral);
-    }
-    requestAnimationFrame(drawSpiral);
-
-    /**************************************************************************
-     * Cursor halo — follows pointer, scales on click/hover
-     **************************************************************************/
-    const halo = document.getElementById('halo');
-    let haloScale = 1;
-    window.addEventListener('pointermove', e => {
-      halo.style.left = e.clientX + 'px';
-      halo.style.top = e.clientY + 'px';
-    });
-    window.addEventListener('pointerdown', () => {
-      halo.style.width = '260px';
-      halo.style.height = '260px';
-      setTimeout(()=>{ halo.style.width='180px'; halo.style.height='180px'; }, 160);
-    });
-
-    /**************************************************************************
-     * Email copy + modal + CRT sound
-     **************************************************************************/
-    const emailEl = document.getElementById('email');
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const terminal = document.getElementById('terminal');
-    const terminalInput = document.getElementById('terminalInput');
-    const runCmd = document.getElementById('runCmd');
-    const closeModal = document.getElementById('closeModal');
-    const openTerminal = document.getElementById('openTerminal');
-    const downloadLog = document.getElementById('downloadLog');
-
-    async function copyAndFeedback(text){
-      try{
-        await navigator.clipboard.writeText(text);
-        const old = emailEl.textContent;
-        emailEl.textContent = 'Copied!';
-        setTimeout(()=> emailEl.textContent = old, 1800);
-        crtBeep(0.02, 220, 0.06);
-      }catch(e){
-        alert('Copy failed —please copy manually: ' + text);
-      }
-    }
-    emailEl.addEventListener('click', e => copyAndFeedback(e.target.textContent.trim()));
-
-    function crtBeep(volume=0.06, freq=440, dur=0.08){
-      if(!audioCtx) initAudio();
-      const g = audioCtx.createGain(); g.gain.value = volume;
-      g.connect(audioCtx.destination);
-      const o = audioCtx.createOscillator();
-      o.type = 'square'; o.frequency.value = freq;
-      o.connect(g); o.start();
-      o.stop(audioCtx.currentTime + dur);
-      g.gain.setTargetAtTime(0.0001, audioCtx.currentTime + dur*0.6, 0.01);
-    }
-
-    openTerminal.addEventListener('click', () => {
-      modalBackdrop.classList.add('show');
-      modalBackdrop.setAttribute('aria-hidden','false');
-      terminalInput.focus();
-      crtBeep(0.02, 330, 0.06);
-    });
-    closeModal.addEventListener('click', closeTerminal);
-
-    function closeTerminal(){
-      modalBackdrop.classList.remove('show');
-      modalBackdrop.setAttribute('aria-hidden','true');
-      crtBeep(0.01, 180, 0.04);
-    }
-
-    // terminal log & handling
-    const log = [];
     function appendLine(text, cls){
       const node = document.createElement('div');
-      node.className = 'line';
+      node.className = 'line' + (cls ? ' '+cls : '');
       node.textContent = text;
       terminal.appendChild(node);
       terminal.scrollTop = terminal.scrollHeight;
-      log.push(text);
+      logArr.push(text);
     }
+
     function handleCommand(raw){
-      const cmd = (raw||'').trim().toLowerCase();
-      if(!cmd) return;
-      appendLine('> ' + raw);
+      if(!raw || !raw.trim()) return;
+      const cmd = raw.trim().toLowerCase();
+      appendLine('> ' + raw, 'prompt');
+
       if(cmd === 'help'){
-        appendLine('Available: help, contact, enter, clear, games, join, secret');
+        appendLine('Available commands: help, contact, enter, clear, games, join, secret');
       } else if (cmd === 'contact'){
-        appendLine('Email: assist.silent.studio@gmail.com — click the email on the page to copy.');
+        appendLine('Email: assist.silent.studio@gmail.com — click the email button to copy.');
       } else if (cmd === 'games'){
         appendLine('No releases yet. Subscribe to the Discord for incubations.');
       } else if (cmd === 'join'){
-        appendLine('Opening Discord widget...'); // widget already present
+        appendLine('Discord widget is embedded on the page.');
       } else if (cmd === 'enter' || cmd === 'secret'){
-        appendLine('Access granted. Entering special mode...');
-        triggerNightmareMode();
+        appendLine('Access granted. Triggering special mode...');
+        triggerNightmareMode(true);
       } else if (cmd === 'clear'){
         terminal.innerHTML = '';
       } else {
@@ -622,169 +364,212 @@
       }
     }
 
-    runCmd.addEventListener('click', () => {
-      handleCommand(terminalInput.value);
-      terminalInput.value = '';
-      crtBeep(0.01, 420, 0.03);
+    runBtn.addEventListener('click', ()=>{
+      handleCommand(input.value);
+      input.value = '';
+      // short beep feedback if audio enabled (handled later)
+      quickBeep();
     });
-    terminalInput.addEventListener('keydown', e=>{
-      if(e.key === 'Enter'){ runCmd.click(); }
+    input.addEventListener('keydown', e=>{
+      if(e.key === 'Enter'){ runBtn.click(); }
     });
 
-    downloadLog.addEventListener('click', ()=>{
-      const blob = new Blob([log.join('\n')], {type:'text/plain'});
+    downloadBtn.addEventListener('click', ()=>{
+      const blob = new Blob([logArr.join('\n')], {type:'text/plain'});
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url;
-      a.download = 'silent-terminal-log.txt';
-      a.click(); URL.revokeObjectURL(url);
+      const a = document.createElement('a'); a.href = url; a.download = 'silent-terminal-log.txt'; a.click();
+      URL.revokeObjectURL(url);
     });
 
-    /**************************************************************************
-     * Nightmare mode / secret: heavy glitch, invert palette, camera noise
-     **************************************************************************/
+    emailCopy.addEventListener('click', async ()=>{
+      const text = 'assist.silent.studio@gmail.com';
+      try{
+        await navigator.clipboard.writeText(text);
+        appendLine('Email copied to clipboard.');
+      }catch(e){
+        appendLine('Copy failed — please copy manually: ' + text);
+      }
+    });
+
+    /* =========================
+       NIGHTMARE MODE (visual + audio tweak)
+       ========================= */
     let nightmare = false;
-    const toggleNightBtn = document.getElementById('toggleNight');
-    toggleNightBtn.addEventListener('click', () => {
-      triggerNightmareMode();
-    });
+    toggleNightBtn.addEventListener('click', ()=> triggerNightmareMode());
 
-    function triggerNightmareMode(){
-      nightmare = !nightmare;
+    function triggerNightmareMode(forceOn = null){
+      if(typeof forceOn === 'boolean') nightmare = !forceOn; // flip inside then set
+      nightmare = (forceOn !== null) ? forceOn : !nightmare;
       document.body.classList.toggle('nightmare', nightmare);
       toggleNightBtn.textContent = 'Nightmare: ' + (nightmare ? 'ON' : 'OFF');
-      // quick glitching on hero image
-      const hero = document.getElementById('heroImg');
+
+      // hero image tonal change
+      const heroImg = document.getElementById('heroImg');
       if(nightmare){
-        hero.style.filter = 'brightness(.35) contrast(1.6) saturate(.6) hue-rotate(10deg)';
-        // aggressive audio modulation
-        if(audioCtx) masterGain.gain.exponentialRampToValueAtTime(0.7, audioCtx.currentTime + 1);
+        heroImg.style.filter = 'brightness(.34) contrast(1.6) saturate(.6) hue-rotate(8deg)';
+        appendLine('Nightmare mode engaged.');
       } else {
-        hero.style.filter = 'brightness(.6) contrast(1.05)';
-        if(audioCtx) masterGain.gain.exponentialRampToValueAtTime(0.35, audioCtx.currentTime + 1);
+        heroImg.style.filter = 'brightness(.56) contrast(1.05)';
+        appendLine('Nightmare mode off.');
       }
-      // a small UI shake
-      document.body.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(0)'}], {duration:700, easing:'ease-in-out'});
-      crtBeep(0.02, nightmare ? 110 : 440, 0.18);
+      // small screen shake
+      document.body.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(0)'}], {duration:650, easing:'ease-in-out'});
     }
 
-    /**************************************************************************
-     * Small game-preview hover with ambient loop preview
-     **************************************************************************/
-    const gamesText = document.getElementById('gamesText');
-    const gamesWidget = document.getElementById('gamesWidget');
-    gamesWidget.addEventListener('mouseenter', () => {
-      gamesText.textContent = 'Whispers... press ENTER in terminal.';
-      if(audioCtx) crtBeep(0.008, 820, 0.04);
-    });
-    gamesWidget.addEventListener('mouseleave', () => {
-      gamesText.textContent = 'No games available yet. Something stirs beneath the surface…';
-    });
+    /* =========================
+       AMBIENT AUDIO (lightweight, resumable)
+       ========================= */
+    let audioCtx = null, masterGain = null, lfo = null, noiseGain = null;
+    let ambientOn = true;
+    function initAudio(){
+      if(audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain(); masterGain.gain.value = 0.28; masterGain.connect(audioCtx.destination);
 
-    /**************************************************************************
-     * Parallax hero movement on scroll
-     **************************************************************************/
-    const heroEl = document.getElementById('hero');
-    const heroImg = document.getElementById('heroImg');
-    window.addEventListener('scroll', ()=>{
-      const sc = window.scrollY;
-      heroImg.style.transform = `translateY(${sc * -0.08}px) scale(1.03)`;
-      if(sc > 60) hero.classList.add('parallax'); else hero.classList.remove('parallax');
-    });
+      const oscA = audioCtx.createOscillator(); oscA.type = 'sine'; oscA.frequency.value = 52;
+      const oscB = audioCtx.createOscillator(); oscB.type = 'sine'; oscB.frequency.value = 97.1;
 
-    /**************************************************************************
-     * Small accessibility and progressive enhancement
-     **************************************************************************/
-    // focus styles for terminal input when modal opens
-    modalBackdrop.addEventListener('click', (e)=>{
-      if(e.target === modalBackdrop) closeTerminal();
-    });
+      const gA = audioCtx.createGain(); gA.gain.value = 0.07;
+      const gB = audioCtx.createGain(); gB.gain.value = 0.05;
 
-    // keyboard shortcut to open terminal: `
-    window.addEventListener('keydown', (e) => {
-      if(e.key === '`'){ openTerminal.click(); e.preventDefault(); }
-      if(e.key === 'Escape'){ closeTerminal(); }
-    });
+      lfo = audioCtx.createOscillator(); lfo.frequency.value = 0.045;
+      const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 8;
 
-    /**************************************************************************
-     * Small visual extras: subtle random whispers overlay (text floating)
-     **************************************************************************/
-    const whisperWords = ['listen','beneath','softly','hush','there','_','void','again','remember'];
-    function spawnWhisper(){
-      const el = document.createElement('div');
-      el.textContent = whisperWords[Math.floor(Math.random()*whisperWords.length)];
-      el.style.position = 'fixed';
-      el.style.left = (10 + Math.random()*80) + '%';
-      el.style.top = (10 + Math.random()*80) + '%';
-      el.style.fontSize = (10 + Math.random()*26) + 'px';
-      el.style.color = 'rgba(255,255,255,' + (0.03 + Math.random()*0.06) + ')';
-      el.style.pointerEvents = 'none';
-      el.style.userSelect = 'none';
-      el.style.transform = 'translateY(0)';
-      el.style.transition = 'transform 6s linear, opacity 6s linear';
-      document.body.appendChild(el);
-      requestAnimationFrame(()=> {
-        el.style.transform = 'translateY(-40px)';
-        el.style.opacity = 0;
-      });
-      setTimeout(()=> el.remove(), 6000);
+      lfo.connect(lfoGain);
+      lfoGain.connect(oscA.frequency);
+      lfoGain.connect(oscB.frequency);
+
+      oscA.connect(gA); gA.connect(masterGain);
+      oscB.connect(gB); gB.connect(masterGain);
+
+      // very short brown-ish noise
+      const bufferSize = 1 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      let last = 0;
+      for(let i=0;i<bufferSize;i++){
+        const white = Math.random()*2 -1;
+        data[i] = (last + (0.02*white)) / 1.02;
+        last = data[i];
+        data[i] *= 2.3;
+      }
+      const noiseNode = audioCtx.createBufferSource();
+      noiseNode.buffer = noiseBuffer; noiseNode.loop = true;
+      noiseGain = audioCtx.createGain(); noiseGain.gain.value = 0.02;
+      noiseNode.connect(noiseGain); noiseGain.connect(masterGain);
+
+      oscA.start(); oscB.start(); lfo.start(); noiseNode.start();
+      // gentle fade in
+      masterGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0.28, audioCtx.currentTime + 1.6);
     }
-    setInterval(spawnWhisper, 4500);
 
-    /**************************************************************************
-     * Small enhancement: detect if user has microphone and show permission prompt
-     **************************************************************************/
-    async function tryMicrophoneHint(){
-      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-      try {
-        // not requesting until user explicitly wants to; just show gentle hint in terminal
-        appendLine('Tip: You can grant mic access and watch particles react. Type "help" for commands.');
-      } catch(e){}
+    function toggleAudio(){
+      if(!audioCtx) initAudio();
+      if(audioCtx.state === 'suspended'){
+        audioCtx.resume();
+        ambientOn = true;
+        toggleAudioBtn.textContent = 'Ambient: ON';
+        appendLine('Ambient audio resumed.');
+      } else {
+        audioCtx.suspend();
+        ambientOn = false;
+        toggleAudioBtn.textContent = 'Ambient: OFF';
+        appendLine('Ambient audio suspended.');
+      }
     }
-    tryMicrophoneHint();
+    toggleAudioBtn.addEventListener('click', toggleAudio);
 
-    /**************************************************************************
-     * Final: small startup notes
-     **************************************************************************/
-    appendLine('Silent Studio loaded. Tip: press ` (backtick) to open terminal.');
+    function quickBeep(volume=0.02, freq=440, dur=0.06){
+      if(!audioCtx) return;
+      const g = audioCtx.createGain(); g.gain.value = volume; g.connect(audioCtx.destination);
+      const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = freq;
+      o.connect(g); o.start(); o.stop(audioCtx.currentTime + dur);
+      g.gain.setTargetAtTime(0.0001, audioCtx.currentTime + dur*0.6, 0.01);
+    }
+
+    /* small beep wrapper safe for pre-audio-init */
+    function quickBeepSafe(){ try{ quickBeep(); }catch(e){} }
+
+    /* use quickBeep when interacting with UI */
+    function clickFeedback(){ 
+      if(!audioCtx) initAudio(); 
+      quickBeep(0.02, 660, 0.06);
+    }
+    // bind click sound to support button
+    supportBtn.addEventListener('click', clickFeedback);
+
+    /* =========================
+       SPIRAL CANVAS (decoupled, lightweight)
+       ========================= */
+    // we keep a decorative canvas but minimize perf impact: create on bigger screens only
+    (function initSpiral(){
+      if(window.matchMedia && window.matchMedia('(max-width:900px)').matches) return;
+      const canvas = document.createElement('canvas');
+      canvas.className = 'spiral';
+      canvas.style.position = 'fixed';
+      canvas.style.width = '420px';
+      canvas.style.height = '420px';
+      canvas.style.left = '50%';
+      canvas.style.top = '50%';
+      canvas.style.transform = 'translate(-50%,-50%)';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = 0;
+      canvas.style.opacity = 0.12;
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      function resize(){
+        const dpr = devicePixelRatio || 1;
+        const w = canvas.width = 420 * dpr;
+        const h = canvas.height = 420 * dpr;
+        canvas.style.width = '420px'; canvas.style.height = '420px';
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+      let t = 0, mx=0;
+      window.addEventListener('pointermove', e => { mx = (e.clientX / window.innerWidth - 0.5) * 0.6; });
+
+      function draw(){
+        ctx.clearRect(0,0,420,420);
+        ctx.save(); ctx.translate(210,210); ctx.rotate(mx);
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+        ctx.lineWidth = 0.9;
+        for(let i=0;i<380;i++){
+          const a = i*0.12 + t*0.0008;
+          const r = 0.9 * i * (0.6 + Math.sin(t/200 + i*0.02)*0.01) + Math.sin(i*0.23+t/40)*6;
+          const x = Math.cos(a)*r, y=Math.sin(a)*r;
+          if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.stroke();
+        ctx.restore();
+        t += 1;
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
+    })();
+
+    /* =========================
+       KEYBIND: backtick opens focus to input
+       ========================= */
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === '`'){ input.focus(); e.preventDefault(); }
+      if(e.key === 'Escape'){ input.blur(); }
+    });
+
+    /* =========================
+       INITIAL LOG MESSAGES
+       ========================= */
+    appendLine('Silent Studio loaded. Tip: press ` (backtick) to focus terminal.');
+    appendLine('Type "help" for commands.');
+
+    /* Small accessibility: ensure focus visible */
+    input.addEventListener('focus', ()=> input.style.outline = '2px solid rgba(127,231,255,0.12)');
+    input.addEventListener('blur', ()=> input.style.outline = 'none');
+
+    /* Utility: safe quick beep when user interacts */
+    function quickBeep(){ if(!audioCtx) initAudio(); quickBeepSafe(); }
   </script>
-    <script>
-const text = "Silent Studio"; 
-let i = 0;
-
-function typeWriter() {
-  if (i < text.length) {
-    document.title = text.substring(0, i + 1);
-    i++;
-    setTimeout(typeWriter, 150); 
-  } else {
-    
-    setTimeout(() => {
-      i = 0;
-      typeWriter();
-    }, 2000); 
-  }
-}
-
-typeWriter();
-      // show message from right after load
-window.addEventListener('DOMContentLoaded', () => {
-  const msg = document.getElementById('patreonMessage');
-  setTimeout(() => { msg.classList.add('show'); }, 500); // objeví se po půl sekundě
-});
-
-// add click sound to Patreon button
-const supportBtn = document.getElementById('supportBtn');
-supportBtn.addEventListener('click', (e)=>{
-  // CRT style beep
-  if(!audioCtx) initAudio();
-  const g = audioCtx.createGain(); g.gain.value = 0.06;
-  g.connect(audioCtx.destination);
-  const o = audioCtx.createOscillator();
-  o.type = 'square'; o.frequency.value = 880;
-  o.connect(g);
-  o.start();
-  o.stop(audioCtx.currentTime + 0.08);
-});
-</script>
 </body>
 </html>
