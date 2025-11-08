@@ -1,989 +1,849 @@
 <!doctype html>
-<html lang="cs">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Roomla — Pre-Alpha (Silent Studio)</title>
-<meta name="description" content="Pre-alpha web horror prototype — Silent Studio" />
+<title>Roomla — Silent Studio | Pre-Alpha v1.0</title>
+<meta name="description" content="Roomla — short web horror prototype (pre-alpha) by Silent Studio" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* =========================
-   STYLES (komplet single file)
-   ========================= */
-:root{
-  --bg:#040406;
-  --card:#0b0b0d;
-  --muted:#9aa;
-  --accent:#9bf;
-  --danger:#ff5555;
-  --calm:#6fffb0;
-  --glass: rgba(255,255,255,0.02);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
-}
-
-/* base */
-*{box-sizing:border-box}
-html,body{height:100%; margin:0; background:linear-gradient(180deg,#030305 0%, #050308 100%); color:#eaeaea; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-font-smoothing:antialiased}
-a{color:var(--accent)}
-.container{max-width:1200px;margin:20px auto;padding:18px}
-
-/* header */
-.header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.title{font-family: 'Orbitron', ui-monospace, monospace; letter-spacing:2px; font-size:1.25rem}
-.sub{color:var(--muted); font-size:0.85rem}
-
-/* room layout */
-.room{display:grid; grid-template-columns: 1fr 340px; gap:18px; margin-top:16px}
-.scene{background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005)); border-radius:10px; padding:18px; border:1px solid rgba(255,255,255,0.03); position:relative; min-height:520px; overflow:hidden}
-.panel{background:transparent;padding:12px;border-radius:8px}
-
-/* visual room */
-.room-visual{position:relative; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:10px}
-.lamp{position:absolute; left:42px; top:28px; width:84px; height:120px; display:flex; align-items:center; justify-content:center; flex-direction:column; pointer-events:none;}
-.lamp .bulb{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #fff6, #fffa00 20%, #ff9 30%, transparent 55%); box-shadow: 0 0 30px rgba(255,200,80,0.12); transform: rotate(-6deg)}
-.lamp .stand{width:8px;height:60px;background:linear-gradient(#222,#111);margin-top:6px}
-
-.desk {width:88%; margin-top:86px; display:flex; gap:18px; align-items:flex-start; justify-content:center}
-.pc-wrap{width:420px; display:flex; flex-direction:column; align-items:center; gap:10px}
-.pc-screen{width:420px; height:220px; background:#03050a; border-radius:8px; border:1px solid rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); color:#9ff; font-size:14px; padding:12px; text-align:center; position:relative}
-.pc-ui{display:flex;gap:8px}
-.controls{display:flex;gap:8px; margin-top:8px}
-.btn{background:transparent;border:1px solid rgba(255,255,255,0.06); padding:8px 12px;border-radius:8px;color:var(--accent);cursor:pointer}
-.btn.ghost{opacity:.8}
-.btn.danger{border-color:rgba(255,90,90,0.25); color:var(--danger)}
-.pills{display:flex; gap:8px; align-items:center; justify-content:center}
-.pill{width:36px;height:18px;border-radius:6px;background:linear-gradient(180deg,#ffb3b3,#ff4f4f);box-shadow:0 6px 18px rgba(255,60,60,0.06);display:inline-flex;align-items:center;justify-content:center;color:#111;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,0.04)}
-.pill.empty{opacity:0.18; filter:grayscale(0.8); background:linear-gradient(180deg,#333,#111);color:#777}
-
-/* right panel */
-.right {display:flex;flex-direction:column; gap:10px}
-.info{font-size:13px;color:var(--muted)}
-.metrics{display:flex;flex-direction:column;gap:8px; margin-top:6px}
-.metric{background:linear-gradient(180deg, rgba(255,255,255,0.01),transparent); padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02); font-size:13px}
-.metric .label{color:var(--muted); font-size:12px}
-.metric .value{font-weight:700; font-size:16px;color:#fff; margin-top:4px}
-
-/* overlay / task modal */
-.overlay{position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:999; background:rgba(0,0,0,0.7)}
-.taskbox{width:min(900px,96%); background:#060708; border-radius:12px; padding:16px; border:1px solid rgba(255,255,255,0.03); box-shadow:0 20px 80px rgba(0,0,0,0.7)}
-.task-header{display:flex; justify-content:space-between; align-items:center; gap:12px}
-.task-body{margin-top:12px}
-
-/* small UI bits for tasks */
-.grid{display:grid;gap:8px}
-.grid.cols-3{grid-template-columns:repeat(3,1fr)}
-.card{background:#071017;border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,0.02); text-align:center; color:#cfe}
-.card.clickable{cursor:pointer}
-.memory-card{height:64px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; user-select:none;}
-
-/* dot-eater canvas */
-#eatCanvas{width:100%; height:260px; background:#001217; border-radius:8px; display:block; margin:8px 0; border:1px solid rgba(255,255,255,0.02)}
-
-/* typing */
-.codeBox{background:#021212;border-radius:8px;padding:12px;border:1px solid rgba(0,255,255,0.03); font-family:var(--font-mono); color:#9ff; white-space:pre-wrap; max-height:220px; overflow:auto}
-
-/* panic overlay (red) */
-.panic-overlay{position:fixed; inset:0; background:rgba(255,0,0,0); pointer-events:none; transition: background 0.25s linear; z-index:1000}
-.panic-red{background:rgba(180,0,0,0.48); pointer-events:auto}
-
-/* jumpscare full-screen */
-.jumpscare{position:fixed; inset:0; background:#000; display:none; align-items:center; justify-content:center; z-index:2000; flex-direction:column}
-.jumpscare.show{display:flex}
-.jumpscare .face{width:60vmin; max-width:720px; height:60vmin; max-height:720px; background:
-  radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 10%),
-  linear-gradient(180deg,#220002,#000);
-  border-radius:8px; display:flex;align-items:center;justify-content:center;color:#fff; font-size:6vmin; font-family:var(--font-mono);
-  transform:scale(1); transition:transform .12s ease;}
-.jumpscare.flash{animation:flash 0.12s linear 0s 6}
-@keyframes flash {
-  0%{filter:brightness(1)}
-  50%{filter:brightness(30)}
-  100%{filter:brightness(1)}
-}
-
-/* footer */
-.footer{margin-top:12px;text-align:center;color:var(--muted);font-size:13px}
-
-/* responsive */
-@media (max-width:960px){
-  .room{grid-template-columns:1fr; padding-bottom:60px}
-  .lamp{left:14px}
-  .pc-wrap{width:100%}
-}
+  /* ===========================
+     Roomla — Pre-Alpha single file
+     =========================== */
+  :root{
+    --bg:#030305;
+    --muted:#98a3b3;
+    --accent:#9bf;
+    --danger:#ff5a5a;
+    --calm:#66f0a8;
+    --glass: rgba(255,255,255,0.03);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:#000;color:#e8eef6;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; -webkit-font-smoothing:antialiased}
+  .center{max-width:1200px;margin:18px auto;padding:12px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .title{font-family:Orbitron,monospace;font-weight:700;letter-spacing:2px}
+  .subtitle{color:var(--muted);font-size:13px}
+  /* scene */
+  .scene{margin-top:12px;display:grid;grid-template-columns:1fr 320px;gap:16px}
+  .room-card{position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 60px rgba(0,0,0,0.7);background:#050406}
+  .room-visual{height:640px;background-size:cover;background-position:center center;position:relative}
+  /* background image will be set inline via style attr */
+  /* interactive layer */
+  .room-layer{position:absolute;inset:0;pointer-events:auto}
+  /* pc hotspot approximate area top-right quadrant lower part */
+  .pc-hotspot{position:absolute; width:220px; height:140px; right:12%; top:14%; transform:translateY(10%); cursor:pointer; border-radius:8px;}
+  .pc-visual{position:absolute; right:12%; top:14%; width:240px;height:160px; transform-origin:center center; display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .pc-visual img{width:100%;height:100%;object-fit:cover;border-radius:8px;filter:contrast(.9) saturate(.85) hue-rotate(2deg)}
+  /* pill icon centered bottom */
+  .pill-visual{position:absolute; left:50%; transform:translateX(-50%); bottom:6%; width:160px;height:72px; display:flex; align-items:center; justify-content:center; gap:12px; pointer-events:none}
+  .pill-slot{width:48px;height:48px;border-radius:8px;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03)}
+  .pill-slot img{width:42px;height:42px;object-fit:contain}
+  .pill-clickable{pointer-events:auto; cursor:pointer}
+  /* right panel */
+  .panel{padding:12px;display:flex;flex-direction:column;gap:12px}
+  .box{background:linear-gradient(180deg,rgba(255,255,255,0.015), rgba(255,255,255,0.006)); border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,0.02)}
+  .metrics{display:flex;flex-direction:column;gap:8px}
+  .metric{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
+  .metric .val{font-weight:700;color:#fff}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:var(--accent);cursor:pointer}
+  .btn.ghost{opacity:.8}
+  .kbd{background:#071018;padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.02);font-family:var(--mono);font-size:12px}
+  /* overlay (zoom/PC view) */
+  .zoom-wrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1200;background:rgba(0,0,0,0.6)}
+  .pc-view{width:min(920px,92%);height:min(560px,78%);background:#05070a;border-radius:10px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;overflow:hidden}
+  .pc-top{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.02)}
+  .pc-screen{flex:1;display:flex;align-items:center;justify-content:center;padding:18px;font-family:var(--mono);color:#9ff; font-size:15px; text-align:center}
+  .pc-bottom{padding:10px;display:flex;gap:8px;align-items:center;justify-content:flex-end}
+  .cooldown-bar{height:8px;background:rgba(255,255,255,0.04);border-radius:6px;overflow:hidden}
+  .cooldown-fill{height:100%;width:0%;background:linear-gradient(90deg,#57f 0%,#9bf 100%);transition:width .25s linear}
+  /* overlay tasks */
+  .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center; z-index:1400;background:rgba(0,0,0,0.72)}
+  .taskbox{width:min(840px,96%);background:#060708;border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.03)}
+  .task-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .task-card{background:#081018;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);cursor:pointer;text-align:center;color:#cfe}
+  .task-card:hover{transform:translateY(-4px);transition:transform .12s}
+  /* panic overlay red flash */
+  .panic-overlay{position:fixed;inset:0;pointer-events:none;z-index:1600;background:rgba(0,0,0,0);transition:background .12s linear}
+  /* jumpscare overlay */
+  .jumpscare{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:2200;background:#000}
+  .jumpscare video, .jumpscare img{max-width:100%;max-height:100%;display:block}
+  /* small tips */
+  .tip{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:rgba(0,0,0,0.6);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-size:13px;z-index:2000}
+  /* responsive */
+  @media (max-width:980px){
+    .scene{grid-template-columns:1fr}
+    .room-visual{height:56vh}
+    .pc-visual{display:none}
+  }
 </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div>
-        <div class="title">ROOMLA • Silent Studio (pre-alpha)</div>
-        <div class="sub">Prototype — test gameplay, tasks & panic mechanics</div>
-      </div>
-      <div class="sub">Playtime target: ≤ 10 minutes</div>
+<div class="center">
+  <div class="topbar">
+    <div>
+      <div class="title">ROOMLA • Silent Studio</div>
+      <div class="subtitle">Pre-alpha v1.0 — short prototype</div>
     </div>
+    <div class="subtitle">Goal: complete <strong>10</strong> childlike tasks</div>
+  </div>
 
-    <div class="room">
-      <!-- LEFT: visual scene -->
-      <div class="scene room-visual" id="scene">
-        <div class="lamp" aria-hidden="true">
-          <div class="bulb" id="lampBulb"></div>
-          <div class="stand"></div>
-        </div>
-
-        <div class="desk">
-          <div class="pc-wrap">
-            <div class="pc-screen" id="pcScreen" aria-live="polite">Click the <strong>PC</strong> to start a task.<br><span style="font-size:12px;color:var(--muted)">Double-click or press <kbd>Enter</kbd> to quick open.</span></div>
-            <div class="controls" style="justify-content:center;margin-top:6px">
-              <button class="btn" id="openPc" title="Open PC">Open PC</button>
-              <button class="btn ghost" id="powerBtn">POWER OFF</button>
-              <button class="btn" id="takePillBtn" title="Take pill (P)">Take Pill (P)</button>
-            </div>
-          </div>
-
-          <div style="width:320px; display:flex; justify-content:center; margin-top:18px">
-            <div class="pills" id="pillsContainer" aria-hidden="false">
-              <div class="pill" data-idx="0">5</div>
-              <div class="pill" data-idx="1">4</div>
-              <div class="pill" data-idx="2">3</div>
-              <div class="pill" data-idx="3">2</div>
-              <div class="pill" data-idx="4">1</div>
-            </div>
-          </div>
-        </div>
-
-        <div id="floorNote" style="position:absolute; left:14px; bottom:12px; color:var(--muted); font-size:12px">
-          A small girl follows you. You don't remember.
-        </div>
+  <!-- START: device choice modal -->
+  <div id="startModal" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.85)">
+    <div style="background:#060708;padding:22px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);width:92%;max-width:720px;text-align:center">
+      <h2 style="margin:0 0 8px;font-family:Orbitron,monospace">ROOMLA — Choose device</h2>
+      <p style="color:var(--muted);margin:0 0 14px">Select the device you play on. This unlocks audio and input. Mobile mode disables Escape and uses touch controls.</p>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:12px">
+        <button class="btn" id="choosePC">Play on PC</button>
+        <button class="btn" id="chooseMobile">Play on Mobile</button>
       </div>
+      <div style="color:var(--muted);font-size:13px;margin-top:12px">Clicking either starts audio and enables the prototype.</div>
+    </div>
+  </div>
 
-      <!-- RIGHT: info / metrics -->
-      <div class="scene right">
-        <div class="panel">
-          <div class="info">You are in a small room with an old PC. Complete tasks on the computer while managing your panic. Use pills (5) to calm breathing. If panic reaches maximum — red screen and jump scare.</div>
-        </div>
+  <div class="scene">
+    <!-- LEFT: room visual -->
+    <div class="room-card">
+      <div id="roomVisual" class="room-visual" style="background-image:url('https://i.imgur.com/O9vg7SA.jpeg');">
+        <div class="room-layer" id="roomLayer">
+          <!-- PC hotspot (in right-top quadrant lower part) -->
+          <div class="pc-hotspot" id="pcHotspot" title="PC — click to zoom"></div>
+          <!-- Visual PC (for zoom preview) -->
+          <div class="pc-visual" id="pcVisual">
+            <!-- we'll draw a small monitor-like overlay -->
+            <img id="pcThumb" src="" alt="pc-thumb">
+          </div>
 
-        <div class="metrics">
-          <div class="metric">
-            <div class="label">Game Timer</div>
-            <div class="value" id="gameTimer">10:00</div>
+          <!-- Pills visual centered bottom -->
+          <div class="pill-visual" id="pillsVisual" style="pointer-events:auto">
+            <!-- five clickable pill slots; we'll fill with your pill icon -->
+            <div class="pill-slot pill-clickable" data-idx="0"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
+            <div class="pill-slot pill-clickable" data-idx="1"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
+            <div class="pill-slot pill-clickable" data-idx="2"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
+            <div class="pill-slot pill-clickable" data-idx="3"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
+            <div class="pill-slot pill-clickable" data-idx="4"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
           </div>
-          <div class="metric">
-            <div class="label">Active Task</div>
-            <div class="value" id="activeTask">None</div>
-          </div>
-          <div class="metric">
-            <div class="label">Pills left</div>
-            <div class="value" id="pillValue">5</div>
-          </div>
-          <div class="metric">
-            <div class="label">Panic</div>
-            <div class="value" id="panicValue">0%</div>
-          </div>
-          <div class="metric">
-            <div class="label">Progress (tasks completed)</div>
-            <div class="value" id="progressValue">0 / 3</div>
-          </div>
-        </div>
-
-        <div class="panel" style="margin-top:8px">
-          <div class="info" style="margin-bottom:8px"><strong>Controls</strong></div>
-          <div class="info">Open PC: click button / double-click screen / Enter<br>Take pill: P key / button<br>Power off: click POWER (will abort active task)<br>Close task: Esc or Abort inside task UI</div>
-        </div>
-
-        <div class="panel" style="margin-top:auto">
-          <div class="info">Prototype notes: this build is meant for testing core flow. Tasks are simplified and intentionally childlike to create tension.</div>
         </div>
       </div>
     </div>
 
-    <div class="footer">Prototype build — Silent Studio. Report bugs and feedback.</div>
-  </div>
-
-  <!-- Overlay / task modal -->
-  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="taskbox" role="document">
-      <div class="task-header">
-        <div>
-          <div style="font-weight:800;font-family:var(--font-mono)" id="taskTitle">Task</div>
-          <div style="font-size:12px;color:var(--muted)" id="taskSub">Do the small game — don't get caught.</div>
+    <!-- RIGHT: info -->
+    <div class="room-card panel">
+      <div class="box">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">GAME</div>
+          <div style="color:var(--muted);font-size:13px">Prototype</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <div style="font-size:12px;color:var(--muted)">Task timer:</div>
-          <div style="font-weight:700" id="taskTimer">--</div>
-          <button class="btn ghost" id="abortTaskBtn">Abort (fail)</button>
+        <div style="margin-top:8px;color:var(--muted);font-size:13px">Complete 10 childlike tasks while managing panic and pills. If panic reaches critical level, breathing events and eventually a jumpscare will occur.</div>
+      </div>
+
+      <div class="box metrics">
+        <div class="metric"><div>Pills:</div><div class="val" id="uiPills">5</div></div>
+        <div class="metric"><div>Panic:</div><div class="val" id="uiPanic">0%</div></div>
+        <div class="metric"><div>Active Task:</div><div class="val" id="uiActive">None</div></div>
+        <div class="metric"><div>Progress:</div><div class="val" id="uiProgress">0 / 10</div></div>
+        <div class="metric"><div>Time left:</div><div class="val" id="uiTimer">10:00</div></div>
+      </div>
+
+      <div class="box">
+        <div style="font-weight:700;margin-bottom:8px">Controls</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="kbd">Open PC: Click PC / Enter</div>
+          <div class="kbd">Take pill: P or click</div>
+          <div class="kbd">Power off: Power button</div>
+          <div class="kbd">Abort task: Esc (PC only)</div>
         </div>
       </div>
 
-      <div class="task-body" id="taskBody">
-        <!-- dynamic -->
-        <div style="display:flex;gap:12px;align-items:center;justify-content:center;padding:18px">
-          <div style="color:var(--muted)">Choose a task to begin:</div>
-        </div>
-        <div class="grid cols-3" style="margin-top:6px">
-          <div class="card clickable" data-task="memory" id="taskMemory">Memory (pairs)</div>
-          <div class="card clickable" data-task="typing" id="taskTyping">Type it exactly</div>
-          <div class="card clickable" data-task="eat" id="taskEat">Dot Snack</div>
-          <div class="card clickable" data-task="pac" id="taskPac">Pac-like (simple)</div>
-          <div class="card clickable" data-task="repair" id="taskRepair">Repair wires</div>
+      <div class="box" style="margin-top:auto">
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost" id="btnOpenPC">Open PC</button>
+          <button class="btn" id="btnPower">POWER OFF</button>
+          <button class="btn" id="btnTakePill">Take Pill (P)</button>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- panic red overlay -->
-  <div class="panic-overlay" id="panicOverlay" aria-hidden="true"></div>
-
-  <!-- jumpscare -->
-  <div class="jumpscare" id="jumpscare" aria-hidden="true">
-    <div class="face" id="jumpscareFace">...</div>
+<!-- PC Zoom view -->
+<div class="zoom-wrap" id="zoomWrap" aria-hidden="true">
+  <div class="pc-view" id="pcView" role="dialog" aria-modal="true">
+    <div class="pc-top">
+      <div style="font-family:var(--mono);font-weight:700" id="pcTitle">OLD PC — TASKS</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="cooldown-bar" style="width:160px">
+          <div class="cooldown-fill" id="cooldownFill"></div>
+        </div>
+        <div class="kbd" id="pcPowerState">ON</div>
+        <button class="btn ghost" id="pcClose">Back (Esc)</button>
+      </div>
+    </div>
+    <div class="pc-screen" id="pcScreenInner">Click a task to start. Complete 10 total tasks.</div>
+    <div class="pc-bottom">
+      <div style="color:var(--muted);font-size:13px;margin-right:auto">Tips: <span id="uiTip">Open PC and choose a task.</span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="openTasks">Tasks</button>
+        <button class="btn ghost" id="pcPower">Power Off</button>
+      </div>
+    </div>
   </div>
+</div>
+
+<!-- Tasks overlay -->
+<div class="overlay" id="taskOverlay" aria-hidden="true">
+  <div class="taskbox" role="document">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:800;font-family:var(--mono)" id="taskHeaderTitle">Tasks</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="color:var(--muted);font-size:13px">Task timer: <span id="taskCountdown">--</span></div>
+        <button class="btn ghost" id="abortBtn">Abort</button>
+      </div>
+    </div>
+
+    <div id="taskBody" style="margin-top:12px">
+      <div class="task-grid" id="taskGrid">
+        <!-- cards filled by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Panic overlay -->
+<div class="panic-overlay" id="panicOverlay" aria-hidden="true"></div>
+
+<!-- jumpscare -->
+<div class="jumpscare" id="jumpscare" aria-hidden="true">
+  <!-- try to play the mov file; if it fails, fallback to text -->
+  <video id="jumpscareVideo" src="https://files.catbox.moe/cskqo9.mov" preload="auto" playsinline></video>
+</div>
+
+<!-- tip bubble -->
+<div class="tip" id="tipBubble">Press Enter or click the PC to open tasks.</div>
 
 <script>
 /* =========================
-   SCRIPT: kompletní engine pre-alpha
+   Roomla v1.0 — single file script
    ========================= */
 
-/* ---------- GAME STATE ---------- */
-const MAX_PILLS = 5;
-let pills = MAX_PILLS;
-let panic = 0; // 0-100 %
-let progressCompleted = 0;
-const PROGRESS_TO_WIN = 3;
-let activeTask = null; // identifier
-let taskTimerInterval = null;
-let taskRemaining = 0;
-let overlayOpen = false;
+(function(){
+  // ---------- config ----------
+  const ROOM_IMG = 'https://i.imgur.com/O9vg7SA.jpeg'; // room background
+  const PILL_IMG = 'https://i.imgur.com/vz9eh1m.jpeg'; // pill icon
+  const BREATH_MP3 = 'https://files.catbox.moe/crj8v7.mp3'; // breathing audio
+  const JUMPSCARE_VIDEO = 'https://files.catbox.moe/cskqo9.mov'; // mov file (may or may not autoplay)
+  const MAX_PILLS = 5;
+  const TARGET_TASKS = 10;
+  const GAME_DURATION_MS = 10 * 60 * 1000; // 10 minutes
+  // panic auto drift config
+  const PANIC_MIN = 0;
+  const PANIC_MAX = 100;
 
-let audioCtx = null;
-let breathOsc = null;
-let breathGain = null;
-let breathingRunning = false;
-let breathEventTimer = null;
+  // ---------- state ----------
+  let deviceMode = null; // "pc" or "mobile"
+  let audioCtx = null;
+  let ambientGain = null;
+  let breathAudioBuffer = null;
+  let breathSource = null;
+  let breathingPlaying = false;
+  let panic = 0;
+  let pills = MAX_PILLS;
+  let progress = 0;
+  let activeTask = null;
+  let taskTimer = null;
+  let taskTimeLeft = 0;
+  let pcCooldown = 0; // seconds remaining before PC usable again after power-off
+  let pcCooldownInterval = null;
+  let gameStartAt = Date.now();
+  let gameTimerInterval = null;
+  let tipInterval = null;
+  let panicAutoInterval = null;
+  let breathEventTimeout = null;
+  let jumpscareTriggered = false;
+  let pcOpen = false;
 
-const GAME_DURATION_MS = 10 * 60 * 1000; // 10 minutes
-let gameStart = Date.now();
-let gameTimerInterval = null;
+  // ---------- DOM ----------
+  const startModal = document.getElementById('startModal');
+  const choosePC = document.getElementById('choosePC');
+  const chooseMobile = document.getElementById('chooseMobile');
 
-/* ---------- DOM ---------- */
-const pcScreen = document.getElementById('pcScreen');
-const openPc = document.getElementById('openPc');
-const powerBtn = document.getElementById('powerBtn');
-const takePillBtn = document.getElementById('takePillBtn');
-const pillsContainer = document.getElementById('pillsContainer');
-const pillValue = document.getElementById('pillValue');
-const panicValue = document.getElementById('panicValue');
-const progressValue = document.getElementById('progressValue');
-const gameTimerEl = document.getElementById('gameTimer');
-const activeTaskEl = document.getElementById('activeTask');
+  const roomVisual = document.getElementById('roomVisual');
+  const pcHotspot = document.getElementById('pcHotspot');
+  const pcVisual = document.getElementById('pcVisual');
+  const pcThumb = document.getElementById('pcThumb');
+  const pillsVisual = document.getElementById('pillsVisual');
+  const pillSlots = Array.from(document.querySelectorAll('.pill-slot'));
 
-const overlay = document.getElementById('overlay');
-const taskTitle = document.getElementById('taskTitle');
-const taskSub = document.getElementById('taskSub');
-const taskBody = document.getElementById('taskBody');
-const abortTaskBtn = document.getElementById('abortTaskBtn');
-const taskTimerEl = document.getElementById('taskTimer');
+  const uiPills = document.getElementById('uiPills');
+  const uiPanic = document.getElementById('uiPanic');
+  const uiActive = document.getElementById('uiActive');
+  const uiProgress = document.getElementById('uiProgress');
+  const uiTimer = document.getElementById('uiTimer');
 
-const panicOverlay = document.getElementById('panicOverlay');
-const jumpscareEl = document.getElementById('jumpscare');
-const jumpscareFace = document.getElementById('jumpscareFace');
+  const btnOpenPC = document.getElementById('btnOpenPC');
+  const btnPower = document.getElementById('btnPower');
+  const btnTakePill = document.getElementById('btnTakePill');
 
-/* ---------- HELPERS: AUDIO (WebAudio synthesized) ---------- */
-function ensureAudio(){
-  if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
+  const zoomWrap = document.getElementById('zoomWrap');
+  const pcView = document.getElementById('pcView');
+  const pcClose = document.getElementById('pcClose');
+  const pcPower = document.getElementById('pcPower');
+  const pcPowerState = document.getElementById('pcPowerState');
+  const pcScreenInner = document.getElementById('pcScreenInner');
+  const openTasksBtn = document.getElementById('openTasks');
+  const uiTip = document.getElementById('uiTip');
+  const cooldownFill = document.getElementById('cooldownFill');
 
-function playBeep(freq=440,dur=0.08,vol=0.04,type='sine'){
-  ensureAudio();
-  const g = audioCtx.createGain(); g.gain.value = vol; g.connect(audioCtx.destination);
-  const o = audioCtx.createOscillator(); o.type = type; o.frequency.value = freq;
-  o.connect(g); o.start();
-  o.stop(audioCtx.currentTime + dur);
-}
+  const taskOverlay = document.getElementById('taskOverlay');
+  const taskGrid = document.getElementById('taskGrid');
+  const taskHeaderTitle = document.getElementById('taskHeaderTitle');
+  const taskCountdown = document.getElementById('taskCountdown');
+  const abortBtn = document.getElementById('abortBtn');
 
-function startBreathingLoop(){
-  if (breathingRunning) return;
-  ensureAudio();
-  breathingRunning = true;
-  // breathing sound is generated on events; we keep an ambient low oscillator to make atmosphere
-  breathOsc = audioCtx.createOscillator();
-  breathOsc.type = 'sine';
-  breathOsc.frequency.value = 40;
-  breathGain = audioCtx.createGain();
-  breathGain.gain.value = 0.0;
-  breathOsc.connect(breathGain); breathGain.connect(audioCtx.destination);
-  breathOsc.start();
-  scheduleBreathEvent();
-}
+  const panicOverlay = document.getElementById('panicOverlay');
+  const jumpscare = document.getElementById('jumpscare');
+  const jumpscareVideo = document.getElementById('jumpscareVideo');
 
-/* Schedule breath event depending on panic and time since last pill.
-   Higher panic -> more frequent breath events.
-*/
-function scheduleBreathEvent(){
-  if (breathEventTimer) { clearTimeout(breathEventTimer); breathEventTimer = null; }
-  // interval between breath events: 6s -> 1.2s depending on panic
-  const min = 1200;
-  const max = 8000;
-  const interval = Math.round(max - (panic/100) * (max - min));
-  // add small randomness
-  const jitter = Math.floor(Math.random() * 800) - 400;
-  const next = Math.max(min, interval + jitter);
-  breathEventTimer = setTimeout(()=> { triggerBreath(); scheduleBreathEvent(); }, next);
-}
+  const tipBubble = document.getElementById('tipBubble');
 
-/* Trigger a single breath sequence (alert to user). If player doesn't react, we cause penalty. */
-let breathActive = false;
-function triggerBreath(){
-  // if overlay open and activeTask -> show breathing alert and start timer to force power off
-  // escalate if panic high
-  if (breathActive) return;
-  breathActive = true;
-  // ramp the breath gain for a short inhale
-  if (!audioCtx) startBreathingLoop();
-  const g = audioCtx.createGain(); g.gain.value = 0.0; g.connect(audioCtx.destination);
-  const o = audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = 120;
-  o.connect(g); o.start();
-  // ramp up
-  g.gain.linearRampToValueAtTime(0.12 + panic/600, audioCtx.currentTime + 0.55);
-  // hold then down
-  setTimeout(()=> {
-    g.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-    o.stop(audioCtx.currentTime + 0.6);
-  }, 700);
+  // preload visuals
+  pcThumb.src = ROOM_IMG; // just a slice for effect (will scale during zoom)
 
-  // visual hint: briefly pulse panic overlay
-  panicOverlay.classList.add('panicPulse');
-  panicOverlay.style.transition = 'background 0.12s linear';
-  panicOverlay.style.background = 'rgba(0,0,0,0.0)';
-  setTimeout(()=>{ if(!jumpscareEl.classList.contains('show')) panicOverlay.style.background = 'rgba(0,0,0,0.0)'; }, 200);
-
-  // if active task -> require quick power off
-  if (activeTask){
-    // grace period depends on panic
-    const baseGrace = 1700;
-    const grace = Math.max(600, baseGrace - panic*10);
-    let handled = false;
-    // bind one-time event
-    const onPower = ()=>{
-      handled = true;
-      // abort active task gracefully (counts as fail)
-      appendScreenText('Power cut — active task aborted.');
-      finishActiveTask(false);
-    };
-    powerBtn.addEventListener('click', onPower, {once:true});
-
-    setTimeout(()=>{
-      if (!handled){
-        // failed to power off in time -> penalty
-        appendScreenText('You froze... something gets closer.');
-        // small penalty: consume a pill if available, else increase panic by a chunk
-        if (pills > 0){
-          pills = Math.max(0, pills - 1);
-          updatePillsUI();
-          appendScreenText('You dropped a pill in panic (lost 1).');
-        } else {
-          // if no pills -> big panic spike
-          increasePanic(18);
-        }
-        // also fail active task
-        if (activeTask) finishActiveTask(false);
-      }
-      breathActive = false;
-    }, grace + 30);
-  } else {
-    // if no active task, just show breathing sound and smaller effect
-    setTimeout(()=> breathActive = false, 900);
+  // ---------- audio helpers ----------
+  function ensureAudio(){
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    ambientGain = audioCtx.createGain(); ambientGain.gain.value = 0.02; ambientGain.connect(audioCtx.destination);
   }
-}
 
-/* ---------- UI update helpers ---------- */
-function appendScreenText(txt){
-  pcScreen.innerHTML = `<div style="font-size:14px">${escapeHtml(txt)}</div>`;
-}
-function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
-
-function updatePanicUI(){
-  panic = Math.max(0, Math.min(100, panic));
-  panicValue.textContent = `${panic}%`;
-  // overlay strength corresponds to panic %
-  const alpha = Math.min(0.55, panic/200);
-  panicOverlay.style.background = `rgba(180,0,0,${alpha})`;
-  if (panic >= 100) {
-    triggerJumpscare();
-  }
-}
-
-function increasePanic(amount){
-  panic = Math.min(100, panic + amount);
-  updatePanicUI();
-}
-
-function decreasePanic(amount){
-  panic = Math.max(0, panic - amount);
-  updatePanicUI();
-}
-
-function updatePillsUI(){
-  pillValue.textContent = String(pills);
-  const pillEls = pillsContainer.querySelectorAll('.pill');
-  pillEls.forEach((el, idx)=>{
-    const remaining = MAX_PILLS - idx;
-    // visually map: first element shows '5', last shows '1' per initial markup
-    // we mark empty based on pills count
-    const showIndex = idx; // 0..4
-    if (idx >= (MAX_PILLS - pills)) {
-      el.classList.remove('empty');
-    } else {
-      el.classList.add('empty');
-    }
-  });
-}
-
-function updateProgressUI(){
-  progressValue.textContent = `${progressCompleted} / ${PROGRESS_TO_WIN}`;
-}
-
-/* ---------- GAME TIMER ---------- */
-function startGameTimer(){
-  gameStart = Date.now();
-  updateGameTimer();
-  if (gameTimerInterval) clearInterval(gameTimerInterval);
-  gameTimerInterval = setInterval(updateGameTimer, 700);
-}
-function updateGameTimer(){
-  const rem = Math.max(0, GAME_DURATION_MS - (Date.now() - gameStart));
-  const mm = Math.floor(rem / 60000);
-  const ss = Math.floor((rem % 60000)/1000).toString().padStart(2,'0');
-  gameTimerEl.textContent = `${mm}:${ss}`;
-  if (rem <= 0){
-    clearInterval(gameTimerInterval);
-    endGame(false, 'Time ran out.');
-  }
-}
-
-/* ---------- TASK FLOW ---------- */
-function openOverlay(){
-  overlay.style.display = 'flex';
-  overlay.setAttribute('aria-hidden','false');
-  overlayOpen = true;
-  taskTitle.textContent = 'Choose a task';
-  taskSub.textContent = 'Childlike mini-games — complete enough to win.';
-  taskBody.querySelectorAll('.card.clickable').forEach(el=>{
-    el.onclick = () => { startTask(el.dataset.task); };
-  });
-}
-function closeOverlay(){
-  overlay.style.display = 'none';
-  overlay.setAttribute('aria-hidden','true');
-  overlayOpen = false;
-}
-
-/* Start a task type (init UI and logic) */
-function startTask(kind){
-  if (activeTask) { alert('Task already active.'); return; }
-  activeTask = kind;
-  activeTaskEl.textContent = kind;
-  openTaskUI(kind);
-}
-
-/* finish active task; success boolean matters */
-function finishActiveTask(success){
-  if (!activeTask) return;
-  if (taskTimerInterval) { clearInterval(taskTimerInterval); taskTimerInterval = null; }
-  // show result
-  if (success){
-    appendScreenText('Task success.');
-    progressCompleted++;
-    updateProgressUI();
-    decreasePanic(8 + Math.floor(Math.random()*6));
-    playBeep(1000,0.08,0.06,'sine');
-    if (progressCompleted >= PROGRESS_TO_WIN){
-      endGame(true, 'You forced memory open.');
-    }
-  } else {
-    appendScreenText('Task failed.');
-    increasePanic(10 + Math.floor(Math.random()*8));
-    playBeep(160,0.24,0.06,'sine');
-  }
-  activeTask = null;
-  activeTaskEl.textContent = 'None';
-  // return to choose tasks
-  setTimeout(()=> { renderTaskChoices(); }, 600);
-}
-
-/* Abort task by player (counts as fail) */
-abortTaskBtn.addEventListener('click', ()=> {
-  if (!activeTask) { closeOverlay(); return; }
-  if (confirm('Abort task? This counts as a failure.')) {
-    finishActiveTask(false);
-  }
-});
-
-/* Power button behavior: toggles power and aborts active task if turning off */
-let powerOn = true;
-powerBtn.addEventListener('click', ()=>{
-  powerOn = !powerOn;
-  powerBtn.textContent = powerOn ? 'POWER OFF' : 'POWER ON';
-  // quick sound
-  playBeep(powerOn ? 660 : 220, 0.06, 0.05);
-  if (!powerOn && activeTask){
-    // abort active task immediately
-    appendScreenText('Power cut by player — task aborted.');
-    finishActiveTask(false);
-  }
-});
-
-/* Take pill */
-takePillBtn.addEventListener('click', takePillHandler);
-document.addEventListener('keydown', (e)=> {
-  if (e.key.toLowerCase() === 'p') takePillHandler();
-  if (e.key === 'Enter' && !overlayOpen) openOverlay();
-  if (e.key === 'Escape' && overlayOpen) {
-    if (activeTask) {
-      if (confirm('Exit task? This will fail it.')) finishActiveTask(false);
-    } else closeOverlay();
-  }
-});
-
-function takePillHandler(){
-  if (pills <= 0) { appendScreenText('No pills left.'); playBeep(220,0.08,0.05,'sine'); return; }
-  pills--;
-  updatePillsUI();
-  // calming effect: decrease panic and reschedule breathing
-  decreasePanic(18);
-  appendScreenText('You took a pill. The breathing calms a bit.');
-  playBeep(1200, 0.07, 0.06, 'sine');
-  // reset breath timing (schedule)
-  scheduleBreathEvent();
-}
-
-/* ---------- TASK UIs ---------- */
-
-/* render the initial choices (default) */
-function renderTaskChoices(){
-  taskBody.innerHTML = `
-    <div style="display:flex;gap:12px;align-items:center;justify-content:center;padding:18px">
-      <div style="color:var(--muted)">Choose a task to begin:</div>
-    </div>
-    <div class="grid cols-3" style="margin-top:6px">
-      <div class="card clickable" data-task="memory">Memory (pairs)</div>
-      <div class="card clickable" data-task="typing">Type it exactly</div>
-      <div class="card clickable" data-task="eat">Dot Snack</div>
-      <div class="card clickable" data-task="pac">Pac-like (simple)</div>
-      <div class="card clickable" data-task="repair">Repair wires</div>
-    </div>
-  `;
-  taskBody.querySelectorAll('.card.clickable').forEach(el=>{
-    el.onclick = ()=> startTask(el.dataset.task);
-  });
-  taskTimerEl.textContent = '--';
-  taskTitle.textContent = 'Choose a task';
-  taskSub.textContent = 'Childlike mini-games — complete enough to win.';
-}
-
-/* opens overlay and renders choices */
-openPc.addEventListener('click', ()=> {
-  ensureAudio();
-  startBreathingLoop();
-  renderTaskChoices();
-  openOverlay();
-  appendScreenText('You open the PC. Choose a small task.');
-});
-
-/* open when double-click on main screen */
-pcScreen.addEventListener('dblclick', ()=> openPc.click());
-
-/* open an actual task UI based on kind */
-function openTaskUI(kind){
-  taskBody.innerHTML = ''; // clear
-  taskTitle.textContent = kind.toUpperCase();
-  taskSub.textContent = 'Complete the task — be quick.';
-  activeTask = kind;
-  // per-task durations and handlers
-  let duration = 45; // seconds default
-  if (kind === 'typing') duration = 75;
-  if (kind === 'memory') duration = 60;
-  if (kind === 'pac') duration = 55;
-  if (kind === 'eat') duration = 45;
-  if (kind === 'repair') duration = 50;
-
-  // create countdown UI
-  let timeLeft = duration;
-  taskTimerEl.textContent = `${timeLeft}s`;
-  if (taskTimerInterval) clearInterval(taskTimerInterval);
-  taskTimerInterval = setInterval(()=> {
-    timeLeft--;
-    taskTimerEl.textContent = `${timeLeft}s`;
-    if (timeLeft <= 0) {
-      clearInterval(taskTimerInterval);
-      taskTimerInterval = null;
-      // fail
-      if (activeTask) finishActiveTask(false);
-    }
-  }, 1000);
-
-  // inject specific UI
-  if (kind === 'memory') initMemoryTask(taskBody);
-  if (kind === 'typing') initTypingTask(taskBody);
-  if (kind === 'eat') initEatTask(taskBody);
-  if (kind === 'pac') initPacTask(taskBody);
-  if (kind === 'repair') initRepairTask(taskBody);
-}
-
-/* ---------- MEMORY TASK (3 pairs) ---------- */
-function initMemoryTask(container){
-  const pairs = ['★','♠','☾','◆','✦','●'].slice(0,3);
-  const deck = [...pairs, ...pairs].sort(()=>Math.random()-0.5);
-  const grid = document.createElement('div');
-  grid.className = 'grid cols-3';
-  deck.forEach((v,i)=>{
-    const card = document.createElement('div');
-    card.className = 'memory-card card clickable hidden';
-    card.textContent = v;
-    card.dataset.val = v;
-    card.dataset.revealed = '0';
-    card.style.background = '#071017';
-    card.style.color = '#071017'; // hidden
-    card.addEventListener('click', ()=> {
-      if (card.dataset.revealed === '1') return;
-      revealCard(card);
-    });
-    grid.appendChild(card);
-  });
-  container.appendChild(grid);
-  let first = null, matches = 0;
-  function revealCard(c){
-    c.dataset.revealed = '1';
-    c.style.color = '#fff';
-    c.style.background = '#0d2328';
-    if (!first){ first = c; return; }
-    if (first.dataset.val === c.dataset.val){
-      // match
-      first.style.background = 'linear-gradient(90deg,#294 0%, #1aa 100%)';
-      c.style.background = 'linear-gradient(90deg,#294 0%, #1aa 100%)';
-      matches++;
-      first = null;
-      if (matches === pairs.length){
-        // success
-        setTimeout(()=> finishActiveTask(true), 400);
-      }
-    } else {
-      // mismatch
-      setTimeout(()=> {
-        first.dataset.revealed = '0'; first.style.color = '#071017'; first.style.background = '#071017';
-        c.dataset.revealed = '0'; c.style.color = '#071017'; c.style.background = '#071017';
-        first = null;
-      }, 650);
+  async function loadBreath(){
+    try {
+      ensureAudio();
+      const resp = await fetch(BREATH_MP3);
+      const ab = await resp.arrayBuffer();
+      breathAudioBuffer = await audioCtx.decodeAudioData(ab);
+    } catch(e){
+      console.warn('Breath load failed', e);
     }
   }
-}
 
-/* ---------- TYPING TASK ---------- */
-function initTypingTask(container){
-  const snippet = `function rememberNight() {
-  // the soft breath
-  let echo = "hush";
-  return echo;
-}`;
-  const codeBox = document.createElement('div');
-  codeBox.className = 'codeBox';
-  codeBox.textContent = snippet.replace(/ /g, '\u00a0');
-  const input = document.createElement('textarea');
-  input.style.width = '100%';
-  input.style.minHeight = '80px';
-  input.style.marginTop = '8px';
-  input.style.fontFamily = 'monospace';
-  input.placeholder = 'Type the snippet exactly...';
-  container.appendChild(codeBox);
-  container.appendChild(input);
-  input.focus();
-  input.addEventListener('input', ()=>{
-    // naive exact match (normalize line endings)
-    if (input.value.replace(/\r\n/g,'\n') === snippet){
-      finishActiveTask(true);
-    }
-  });
-}
-
-/* ---------- DOT-EATER (simple) ---------- */
-function initEatTask(container){
-  container.innerHTML = `<canvas id="eatCanvas" width="720" height="260"></canvas>
-    <div style="font-size:12px;color:var(--muted);margin-top:6px">Use arrow keys to move. Collect all dots.</div>`;
-  const canvas = container.querySelector('#eatCanvas');
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  let px = 40, py = 40, pr = 10;
-  const DOTS = 10;
-  const dots = [];
-  for (let i=0;i<DOTS;i++){
-    dots.push({x:40+Math.random()*(w-80), y:40+Math.random()*(h-80), r:4, got:false});
+  // play a one-shot breathing audio (slightly pitched by panic)
+  function playBreathOnce(){
+    if (!breathAudioBuffer || !audioCtx) return;
+    const s = audioCtx.createBufferSource();
+    s.buffer = breathAudioBuffer;
+    const g = audioCtx.createGain(); g.gain.value = 0.6 * Math.min(1, panic/100 + 0.2);
+    s.connect(g); g.connect(audioCtx.destination);
+    // pitch variation based on panic
+    s.playbackRate.value = 1 + (panic - 50)/400; // small pitch change
+    s.start();
+    // stop reference
+    setTimeout(()=> { try { s.stop(); } catch(e){} }, (s.buffer.duration + 2000));
   }
-  let keys = {};
-  function draw(){
-    ctx.fillStyle = '#001217'; ctx.fillRect(0,0,w,h);
-    // dots
-    ctx.fillStyle = '#ffdd88';
-    let remaining = 0;
-    for (const d of dots){ if (!d.got){ ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill(); remaining++; } }
-    // player
-    ctx.fillStyle = '#9ff'; ctx.beginPath(); ctx.arc(px,py,pr,0,Math.PI*2); ctx.fill();
-    // move
-    if (keys.ArrowUp) py -= 2.6;
-    if (keys.ArrowDown) py += 2.6;
-    if (keys.ArrowLeft) px -= 2.6;
-    if (keys.ArrowRight) px += 2.6;
-    px = Math.max(pr, Math.min(w-pr, px)); py = Math.max(pr, Math.min(h-pr, py));
-    // collision
-    for (const d of dots){ if (!d.got){ const dx=px-d.x, dy=py-d.y; if (Math.hypot(dx,dy) < pr + d.r){ d.got=true; playBeep(900,0.04,0.04); } } }
-    if (remaining === 0){ document.removeEventListener('keydown', kd); document.removeEventListener('keyup', ku); finishActiveTask(true); return; }
-    else requestAnimationFrame(draw);
-  }
-  function kd(e){ keys[e.key]=true; }
-  function ku(e){ keys[e.key]=false; }
-  document.addEventListener('keydown', kd); document.addEventListener('keyup', ku);
-  requestAnimationFrame(draw);
-}
 
-/* ---------- PAC-LIKE SIMPLE (very simplified) ---------- */
-function initPacTask(container){
-  container.innerHTML = `<canvas id="pacCanvas" width="720" height="260"></canvas>
-    <div style="font-size:12px;color:var(--muted);margin-top:6px">Collect pellets. Avoid ghost (slow).</div>`;
-  const canvas = container.querySelector('#pacCanvas');
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  const pellets = [];
-  for (let x=40;x<w-40;x+=40){
-    for (let y=40;y<h-40;y+=40){
-      if (Math.random()<0.55) pellets.push({x,y,got:false});
-    }
+  // ambient random click / hum — synthesized small noises
+  function playAmbientTick(){
+    ensureAudio();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain(); g.gain.value = 0.015;
+    o.type = Math.random() < 0.6 ? 'sine' : 'triangle';
+    o.frequency.value = 60 + Math.random()*240;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25 + Math.random()*0.4);
+    setTimeout(()=>{ try { o.stop(); } catch(e){} }, 350 + Math.random()*400);
   }
-  let player = {x:60,y:60,r:10};
-  let ghost = {x:w-60,y:h-60,r:12,dir:0};
-  let keys = {};
-  function draw(){
-    ctx.fillStyle = '#001217'; ctx.fillRect(0,0,w,h);
-    // draw pellets
-    ctx.fillStyle = '#ffdd88';
-    let left = 0;
-    for (const p of pellets){ if (!p.got){ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill(); left++; } }
-    // draw ghost
-    ctx.fillStyle = '#ff6b6b'; ctx.beginPath(); ctx.arc(ghost.x,ghost.y,ghost.r,0,Math.PI*2); ctx.fill();
-    // draw player
-    ctx.fillStyle = '#9ff'; ctx.beginPath(); ctx.arc(player.x,player.y,player.r,0,Math.PI*2); ctx.fill();
-    // move player
-    if (keys.ArrowUp) player.y -= 2.4;
-    if (keys.ArrowDown) player.y += 2.4;
-    if (keys.ArrowLeft) player.x -= 2.4;
-    if (keys.ArrowRight) player.x += 2.4;
-    player.x = Math.max(player.r, Math.min(w-player.r, player.x)); player.y = Math.max(player.r, Math.min(h-player.r, player.y));
-    // pellet collision
-    for (const p of pellets){ if (!p.got){ if (Math.hypot(player.x-p.x, player.y-p.y) < player.r + 6){ p.got=true; playBeep(760,0.04,0.04); } } }
-    // ghost slowly moves toward player
-    const ang = Math.atan2(player.y - ghost.y, player.x - ghost.x);
-    ghost.x += Math.cos(ang) * 0.9;
-    ghost.y += Math.sin(ang) * 0.9;
-    // collision with ghost -> fail
-    if (Math.hypot(player.x - ghost.x, player.y - ghost.y) < player.r + ghost.r - 2){
-      document.removeEventListener('keydown', kd); document.removeEventListener('keyup', ku);
-      finishActiveTask(false);
-      return;
-    }
-    if (left === 0){
-      document.removeEventListener('keydown', kd); document.removeEventListener('keyup', ku);
-      finishActiveTask(true); return;
-    }
-    requestAnimationFrame(draw);
-  }
-  function kd(e){ keys[e.key]=true; }
-  function ku(e){ keys[e.key]=false; }
-  document.addEventListener('keydown', kd); document.addEventListener('keyup', ku);
-  requestAnimationFrame(draw);
-}
 
-/* ---------- REPAIR WIRES TASK ---------- */
-function initRepairTask(container){
-  // simple reorder puzzle: connect left to right by matching colors
-  const colors = ['#f55','#5f5','#55f','#ff8','#8ff'];
-  const left = colors.slice().sort(()=>Math.random()-0.5);
-  const right = colors.slice().sort(()=>Math.random()-0.5);
-  container.innerHTML = `<div style="display:flex;gap:12px;align-items:center;justify-content:center">
-    <div id="leftCol" style="display:flex;flex-direction:column;gap:8px"></div>
-    <div id="midCol" style="width:40px;height:180px;display:flex;align-items:center;justify-content:center;color:var(--muted)">↔</div>
-    <div id="rightCol" style="display:flex;flex-direction:column;gap:8px"></div>
-  </div><div style="font-size:12px;color:var(--muted);margin-top:8px">Click left, then click matching right to connect. Connect all pairs.</div>`;
-  const leftCol = container.querySelector('#leftCol');
-  const rightCol = container.querySelector('#rightCol');
-  left.forEach((c,i)=>{
-    const el = document.createElement('div'); el.className='card clickable'; el.style.background=c; el.dataset.color=c; el.textContent=' ';
-    el.style.height='34px'; leftCol.appendChild(el);
-  });
-  right.forEach((c,i)=>{
-    const el = document.createElement('div'); el.className='card clickable'; el.style.background=c; el.dataset.color=c; el.textContent=' ';
-    el.style.height='34px'; rightCol.appendChild(el);
-  });
-  let picked = null;
-  let pairs = 0;
-  container.querySelectorAll('#leftCol .card').forEach(el=>{
-    el.addEventListener('click', ()=> {
-      if (picked === el) { picked = null; el.style.outline=''; return; }
-      if (picked && picked.closest('#leftCol')) { // switching
-        picked.style.outline=''; picked = el; el.style.outline='3px solid #fff'; return;
-      }
-      picked = el; el.style.outline='3px solid #fff';
-    });
-  });
-  container.querySelectorAll('#rightCol .card').forEach(el=>{
-    el.addEventListener('click', ()=> {
-      if (!picked) return;
-      // check match
-      if (picked.dataset.color === el.dataset.color){
-        // mark connected
-        picked.style.opacity='0.4'; el.style.opacity='0.4'; picked.style.pointerEvents='none'; el.style.pointerEvents='none';
-        picked.style.outline=''; el.style.outline='';
-        picked = null;
-        pairs++;
-        playBeep(900,0.04,0.05);
-        if (pairs === colors.length) finishActiveTask(true);
-      } else {
-        // wrong: small panic
-        increasePanic(6);
-        playBeep(200,0.12,0.06,'sawtooth');
-        if (picked) { picked.style.outline=''; picked=null; }
-      }
-    });
-  });
-}
-
-/* ---------- JUMPSCARE ---------- */
-let jumpscareHappened = false;
-function triggerJumpscare(){
-  if (jumpscareHappened) return;
-  jumpscareHappened = true;
-  // full red flash and face
-  panicOverlay.classList.add('panic-red');
-  // generate a scary face via text / svg
-  jumpscareFace.textContent = '';
-  // build simple creepy SVG face (procedural)
-  const svg = `
-    <svg viewBox="0 0 800 800" width="80%" height="80%" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="#120002"/>
-      <g transform="translate(400 380)">
-        <ellipse rx="240" ry="320" fill="#000" stroke="#8b0000" stroke-width="8"/>
-        <circle cx="-80" cy="-50" r="40" fill="#fff"/>
-        <circle cx="90" cy="-40" r="40" fill="#fff"/>
-        <rect x="-140" y="60" width="280" height="40" fill="#150000" rx="8"/>
-        <path d="M -120 100 Q -60 180 0 120 Q 60 180 120 100" fill="#2b0000"/>
-        <text x="-230" y="-220" fill="#ff7a7a" font-size="36" font-family="monospace">REMEMBER.</text>
-      </g>
-    </svg>`;
-  jumpscareFace.innerHTML = svg;
-  // show jumpscare overlay
-  jumpscareEl.classList.add('show');
-  jumpscareEl.classList.add('flashMe');
-  jumpscareFace.classList.add('flash');
-  // loud burst sound
-  ensureAudio();
-  const g = audioCtx.createGain(); g.gain.value = 0.001; g.connect(audioCtx.destination);
-  const o = audioCtx.createOscillator(); o.type='sawtooth'; o.frequency.value=80;
-  o.connect(g); o.start();
-  // ramp up quickly and noise burst
-  g.gain.linearRampToValueAtTime(0.9, audioCtx.currentTime + 0.06);
-  setTimeout(()=> {
-    // white noise burst
-    const bufferSize = audioCtx.sampleRate * 0.2;
+  // big loud burst for jumpscare (synth + noise)
+  function jumpscareSound(){
+    ensureAudio();
+    // oscillator
+    const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 80;
+    const og = audioCtx.createGain(); og.gain.value = 0.0005;
+    o.connect(og); og.connect(audioCtx.destination);
+    o.start();
+    og.gain.linearRampToValueAtTime(1.2, audioCtx.currentTime + 0.05);
+    // noise
+    const bufferSize = audioCtx.sampleRate * 0.25;
     const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = buffer.getChannelData(0);
-    for (let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1)*Math.exp(-i/bufferSize*3);
+    for (let i=0;i<bufferSize;i++) data[i] = (Math.random()*2 - 1) * Math.exp(-i / bufferSize * 3);
     const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
-    const ng = audioCtx.createGain(); ng.gain.value = 0.6; ng.connect(audioCtx.destination);
-    noise.connect(ng); noise.start();
-    // stop oscillator
-    g.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-    o.stop(audioCtx.currentTime + 0.1);
-    // show red full
-    panicOverlay.style.transition = 'background 0.06s linear';
-    panicOverlay.style.background = 'rgba(180,0,0,0.9)';
-  }, 90);
-
-  // after short time, end game with failure
-  setTimeout(()=> {
-    endGame(false, 'Jumpscare — you were caught.');
-  }, 1600);
-}
-
-/* ---------- ENDGAME ---------- */
-function endGame(win, reason){
-  // stop breathing timers
-  if (breathEventTimer) { clearTimeout(breathEventTimer); breathEventTimer=null; }
-  if (taskTimerInterval) { clearInterval(taskTimerInterval); taskTimerInterval=null; }
-  if (gameTimerInterval) { clearInterval(gameTimerInterval); gameTimerInterval=null; }
-
-  // display message
-  if (win){
-    alert('You survived and memory returns...\n' + (reason || 'Victory.'));
-    // could show credits / memory reveal
-    location.reload();
-  } else {
-    alert('You failed: ' + (reason || 'Caught.'));
-    location.reload();
+    const ng = audioCtx.createGain(); ng.gain.value = 0.001;
+    noise.connect(ng); ng.connect(audioCtx.destination);
+    noise.start();
+    ng.gain.linearRampToValueAtTime(0.9, audioCtx.currentTime + 0.06);
+    setTimeout(()=>{ ng.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.16); noise.stop(audioCtx.currentTime + 0.18); }, 100);
+    og.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.16);
+    setTimeout(()=>{ try { o.stop(); } catch(e){} }, 220);
   }
-}
 
-/* ---------- SCHEDULING / INIT ---------- */
-function init(){
-  updatePillsUI();
-  updatePanicUI();
-  updateProgressUI();
-  startGameTimer();
-  startBreathingLoop();
-  scheduleBreathEvent();
-  appendScreenText('You wake up. The room is quiet. Open the PC to begin.');
+  // ---------- UI helpers ----------
+  function setPanicUI(){
+    uiPanic.textContent = `${Math.round(panic)}%`;
+    const alpha = Math.min(0.8, panic/150);
+    panicOverlay.style.background = `rgba(180,0,0,${alpha})`;
+    // small vignette flicker if panic high
+    if (panic >= 80) panicOverlay.style.transition = 'background .06s linear';
+    else panicOverlay.style.transition = 'background .18s linear';
+  }
+  function setPillsUI(){
+    uiPills.textContent = String(pills);
+    pillSlots.forEach((slot, idx)=>{
+      if (idx < (MAX_PILLS - pills)) slot.classList.add('empty');
+      else slot.classList.remove('empty');
+    });
+  }
+  function setProgressUI(){
+    uiProgress.textContent = `${progress} / ${TARGET_TASKS}`;
+  }
+  function setActiveUI(){
+    uiActive.textContent = activeTask ? activeTask : 'None';
+  }
 
-  // simple pill clicks: clicking visual pill acts as taking pill
-  pillsContainer.querySelectorAll('.pill').forEach(el=>{
-    el.addEventListener('click', ()=> {
-      // allow click only if pill not empty
-      if (el.classList.contains('empty')) { appendScreenText('No pill there.'); return; }
-      // take pill
-      if (pills <= 0) return;
-      pills--;
-      updatePillsUI();
-      decreasePanic(18);
-      appendScreenText('You took a pill (visual).');
-      playBeep(1200,0.08,0.06,'sine');
-      scheduleBreathEvent();
+  // ---------- Panic auto behavior ----------
+  // random small jumps + slow drift; call often
+  function startPanicAuto(){
+    if (panicAutoInterval) clearInterval(panicAutoInterval);
+    panicAutoInterval = setInterval(()=>{
+      // small random jump
+      const rnd = Math.random();
+      if (rnd < 0.15){
+        // occasional small jump
+        panic = Math.min(PANIC_MAX, panic + (6 + Math.random()*12));
+      } else {
+        // gentle drift up or down slightly
+        panic = Math.max(0, panic + (Math.random() - 0.48) * 1.8);
+      }
+      setPanicUI();
+      // occasionally play ambient tick
+      if (Math.random() < 0.12) playAmbientTick();
+      // if panic above threshold, schedule breath event
+      if (panic >= 80) scheduleBreathEvent();
+    }, 900);
+  }
+
+  // breath event scheduling (if panic >= 80)
+  function scheduleBreathEvent(){
+    if (breathEventTimeout) { clearTimeout(breathEventTimeout); breathEventTimeout = null; }
+    if (panic < 80) return;
+    const min = 700; const max = 2200;
+    const next = Math.max(min, Math.floor(max - (panic - 80) * 20) + (Math.random()*400 - 200));
+    breathEventTimeout = setTimeout(()=> { playBreathOnce(); /* visual hint */ flashPanicPulse(); /* consequence if active task */ handleBreathDuringTask(); scheduleBreathEvent(); }, next);
+  }
+
+  function flashPanicPulse(){
+    panicOverlay.style.transition = 'background .08s linear';
+    panicOverlay.style.background = 'rgba(200,0,0,0.8)';
+    setTimeout(()=> { if (!jumpscareTriggered) panicOverlay.style.background = `rgba(180,0,0,${Math.min(0.6, panic/150)})`; }, 240);
+  }
+
+  // if breath happens and player is at PC doing a task, require power off quickly
+  function handleBreathDuringTask(){
+    if (activeTask && pcOpen){
+      // small grace that depends on panic
+      const base = 1500; const grace = Math.max(500, base - panic*10);
+      let handled = false;
+      // set ephemeral handler for power off
+      const onPower = function onceHandler(){
+        handled = true;
+        // abort active task (counts as fail)
+        finishTask(false, 'Power cut during breath (abort).');
+      };
+      pcPower.addEventListener('click', onPower, {once:true});
+      setTimeout(()=> {
+        if (!handled){
+          // failed to power off => penalty
+          if (pills > 0) { pills = Math.max(0, pills - 1); setPillsUI(); showScreenText('You dropped a pill in panic (lost 1).'); }
+          else { panic = Math.min(PANIC_MAX, panic + 18); setPanicUI(); }
+          if (activeTask) finishTask(false, 'You froze — task failed.');
+        }
+      }, grace + 30);
+    }
+  }
+
+  // ---------- game timer ----------
+  function startGameTimer(){
+    gameStartAt = Date.now();
+    if (gameTimerInterval) clearInterval(gameTimerInterval);
+    gameTimerInterval = setInterval(()=> {
+      const rem = Math.max(0, GAME_DURATION_MS - (Date.now() - gameStartAt));
+      const mm = Math.floor(rem/60000);
+      const ss = Math.floor((rem%60000)/1000).toString().padStart(2,'0');
+      uiTimer.textContent = `${mm}:${ss}`;
+      if (rem <= 0){
+        clearInterval(gameTimerInterval);
+        gameOver(false, 'Time ran out.');
+      }
+    }, 700);
+  }
+
+  // ---------- UI tips ----------
+  const TIPS = [
+    'Press P or click a pill to calm down.',
+    'If you hear breathing, power off the PC quickly to abort tasks.',
+    'Turning off PC starts a 30s cooldown before reopening.',
+    'Complete 10 tasks to reach the ending.',
+    'Mobile mode disables Escape; use touch controls.',
+  ];
+  function startTips(){
+    let i = 0;
+    uiTip.textContent = TIPS[i];
+    if (tipInterval) clearInterval(tipInterval);
+    tipInterval = setInterval(()=> {
+      i = (i+1) % TIPS.length;
+      uiTip.textContent = TIPS[i];
+      tipBubble.textContent = TIPS[i];
+    }, 4500);
+  }
+
+  // ---------- tasks (placeholders) ----------
+  // We'll generate a pool of simple tasks; total required is 10
+  const TASK_POOL = ['memory','typing','eat','pac','repair','memory','typing','eat','repair','pac'];
+
+  function renderTaskGrid(){
+    taskGrid.innerHTML = '';
+    TASK_POOL.forEach((t, idx)=>{
+      const el = document.createElement('div');
+      el.className = 'task-card';
+      el.dataset.task = t;
+      el.dataset.order = idx;
+      el.textContent = `${t.toUpperCase()} — Task ${idx+1}`;
+      el.addEventListener('click', ()=> {
+        startTaskInstance(t, idx);
+      });
+      taskGrid.appendChild(el);
+    });
+  }
+
+  // ---------- task lifecycle ----------
+  function startTaskInstance(kind, index){
+    if (activeTask) { showScreenText('Finish current task first.'); return; }
+    activeTask = `${kind}#${index+1}`;
+    setActiveUI();
+    openTaskOverlay(kind);
+    // set per-task durations
+    let dur = 50;
+    if (kind === 'typing') dur = 75;
+    if (kind === 'memory') dur = 60;
+    if (kind === 'eat') dur = 45;
+    if (kind === 'pac') dur = 55;
+    if (kind === 'repair') dur = 50;
+    taskTimeLeft = dur;
+    taskCountdown.textContent = `${taskTimeLeft}s`;
+    if (taskTimer) clearInterval(taskTimer);
+    taskTimer = setInterval(()=> {
+      taskTimeLeft--;
+      taskCountdown.textContent = `${taskTimeLeft}s`;
+      if (taskTimeLeft <= 0){
+        clearInterval(taskTimer);
+        taskTimer = null;
+        finishTask(false, 'Time expired.');
+      }
+    }, 1000);
+  }
+
+  function finishTask(success, reason){
+    if (!activeTask) return;
+    // close UI
+    closeTaskOverlay();
+    if (taskTimer) { clearInterval(taskTimer); taskTimer = null; }
+    const prev = activeTask;
+    activeTask = null;
+    setActiveUI();
+    if (success){
+      progress++;
+      setProgressUI();
+      panic = Math.max(0, panic - (8 + Math.random()*8));
+      setPanicUI();
+      showScreenText('Task completed. Progress +' + 1);
+      playAmbientTick();
+      if (progress >= TARGET_TASKS) {
+        gameOver(true, 'You forced a memory to return.');
+        return;
+      }
+    } else {
+      panic = Math.min(100, panic + (10 + Math.random()*10));
+      setPanicUI();
+      showScreenText(reason || 'Task failed.');
+    }
+  }
+
+  // ---------- open / close overlays ----------
+  function openZoomToPC(){
+    // if cooldown active, show bar
+    if (pcCooldown > 0){
+      showScreenText('PC is cooling down. Wait ' + pcCooldown + 's.');
+      return;
+    }
+    zoomWrap.style.display = 'flex';
+    zoomWrap.setAttribute('aria-hidden','false');
+    pcOpen = true;
+    openTaskOverlayUI(); // set tasks inside pc view available via button
+    setActiveUI();
+  }
+  function closeZoomToPC(){
+    zoomWrap.style.display = 'none';
+    zoomWrap.setAttribute('aria-hidden','true');
+    pcOpen = false;
+    // when closing PC view, small panic decay
+    panic = Math.max(0, panic - 1.5);
+    setPanicUI();
+  }
+
+  function openTaskOverlay(kind){
+    // show tasks overlay (full list of small tasks)
+    renderTaskGrid();
+    taskOverlay.style.display = 'flex';
+    taskOverlay.setAttribute('aria-hidden','false');
+    // if starting a specific kind, we replaced content via startTaskInstance
+    // otherwise, grid clicking will start tasks
+  }
+  function closeTaskOverlay(){
+    taskOverlay.style.display = 'none';
+    taskOverlay.setAttribute('aria-hidden','true');
+  }
+
+  // helper: open overlay wrapper when clicking "Tasks" button
+  function openTaskOverlayUI(){
+    renderTaskGrid();
+    taskOverlay.style.display = 'flex';
+    taskOverlay.setAttribute('aria-hidden','false');
+  }
+
+  // ---------- UI: small in-screen messages ----------
+  function showScreenText(txt){
+    pcScreenInner.innerHTML = `<div style="color:#9ff">${escapeHtml(txt)}</div>`;
+    setTimeout(()=> {
+      if (!activeTask) pcScreenInner.innerHTML = 'Click a task to start. Complete 10 total tasks.';
+    }, 2400);
+  }
+
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+  // ---------- power off / cooldown behavior ----------
+  function powerOffAction(){
+    // toggles power; if turning off during task => abort (fail)
+    // but spec: turning off PC should return to main room and reduce panic slowly; when reopening, 30s loading
+    if (pcCooldown > 0){
+      // if off already in cooldown, turning on not allowed until cooldown 30s finished
+      showScreenText('PC still in cooldown.');
+      return;
+    }
+    // start cooldown sequence
+    showScreenText('You turned off the PC. Returning to room...');
+    // if activeTask -> abort
+    if (activeTask) {
+      finishTask(false, 'Power off by player.');
+    }
+    // close pc view if open
+    closeZoomToPC();
+    // slow panic decay while off (but small)
+    let offDecay = setInterval(()=> {
+      panic = Math.max(0, panic - 0.6);
+      setPanicUI();
+    }, 1200);
+    // set cooldown 30s during which PC cannot be reopened
+    pcCooldown = 30;
+    updateCooldownFill();
+    if (pcCooldownInterval) clearInterval(pcCooldownInterval);
+    pcCooldownInterval = setInterval(()=> {
+      pcCooldown--;
+      updateCooldownFill();
+      if (pcCooldown <= 0){
+        clearInterval(pcCooldownInterval);
+        pcCooldownInterval = null;
+        pcCooldown = 0;
+        updateCooldownFill();
+        clearInterval(offDecay);
+        showScreenText('PC is available again.');
+      }
+    }, 1000);
+  }
+
+  function updateCooldownFill(){
+    if (pcCooldown <= 0) {
+      cooldownFill.style.width = '0%';
+      pcPowerState.textContent = 'ON';
+      pcPowerState.style.background = 'transparent';
+      return;
+    }
+    const pct = Math.max(0, Math.min(100, (30 - pcCooldown) / 30 * 100));
+    cooldownFill.style.width = pct + '%';
+    pcPowerState.textContent = 'COOLDOWN';
+    pcPowerState.style.background = 'transparent';
+  }
+
+  // ---------- pill behavior ----------
+  function takePill(){
+    if (pills <= 0) { showScreenText('No pills left.'); playAmbientTick(); return; }
+    pills--;
+    setPillsUI();
+    panic = Math.max(0, panic - 20 - Math.random()*8);
+    setPanicUI();
+    showScreenText('You took a pill. Breathing calms.');
+    playAmbientTick();
+    // reset breath schedule
+    if (breathEventTimeout) { clearTimeout(breathEventTimeout); breathEventTimeout = null; }
+    scheduleBreathEvent();
+  }
+
+  // ---------- jumpscare logic ----------
+  function triggerJumpscare(){
+    if (jumpscareTriggered) return;
+    jumpscareTriggered = true;
+    // show jumpscare overlay
+    jumpscare.style.display = 'flex';
+    jumpscare.setAttribute('aria-hidden','false');
+    // attempt to play MOV video
+    try {
+      jumpscareVideo.src = JUMPSCARE_VIDEO;
+      jumpscareVideo.currentTime = 0;
+      jumpscareVideo.play().catch(()=> {
+        // if video fails to play (format), fallback to text + flash
+        fallbackJumpscare();
+      });
+    } catch(e){
+      fallbackJumpscare();
+    }
+    // loud sound
+    jumpscareSound();
+    // after short delay, end
+    setTimeout(()=> {
+      gameOver(false, 'Caught by the child.');
+    }, 2400);
+  }
+
+  function fallbackJumpscare(){
+    jumpscare.innerHTML = '<div style="color:#ffb3b3;font-size:28px;font-family:var(--mono);font-weight:800">REMEMBER.</div>';
+    jumpscare.style.background = '#120002';
+  }
+
+  // ---------- game over ----------
+  function gameOver(win, reason){
+    // stop everything
+    clearInterval(panicAutoInterval); panicAutoInterval = null;
+    clearInterval(gameTimerInterval); gameTimerInterval = null;
+    clearInterval(pcCooldownInterval); pcCooldownInterval = null;
+    if (!win) {
+      // if not already jumpscare, trigger
+      if (!jumpscareTriggered) triggerJumpscare();
+      setTimeout(()=> {
+        alert('You failed — ' + (reason || 'Captured.'));
+        location.reload();
+      }, 2600);
+    } else {
+      alert('You survived. Memory returns... ' + (reason || 'Victory.'));
+      location.reload();
+    }
+  }
+
+  // ---------- keyboard / input ----------
+  document.addEventListener('keydown', (e)=>{
+    if (!deviceMode) return;
+    if (e.key === 'Enter'){
+      if (!pcOpen) openZoomToPC();
+      else {
+        // if overlay, nothing
+      }
+    }
+    if (e.key.toLowerCase() === 'p') {
+      takePill();
+    }
+    if (e.key === 'Escape'){
+      // only PC mode supports escape to exit PC
+      if (deviceMode === 'pc' && pcOpen){
+        closeZoomToPC();
+      } else if (deviceMode === 'pc' && taskOverlay.style.display === 'flex'){
+        if (activeTask){
+          if (confirm('Abort task? This counts as failure.')) finishTask(false, 'Aborted by player.');
+        } else closeTaskOverlay();
+      }
+    }
+  });
+
+  // ---------- event binding ----------
+  choosePC.addEventListener('click', async ()=> {
+    deviceMode = 'pc';
+    startModal.style.display = 'none';
+    await initAfterChoose();
+  });
+  chooseMobile.addEventListener('click', async ()=> {
+    deviceMode = 'mobile';
+    startModal.style.display = 'none';
+    await initAfterChoose();
+  });
+
+  pcHotspot.addEventListener('click', ()=> {
+    // click hotspot -> open zoom
+    openZoomToPC();
+  });
+
+  btnOpenPC.addEventListener('click', ()=> openZoomToPC());
+  btnPower.addEventListener('click', ()=> {
+    powerOffAction();
+  });
+  btnTakePill.addEventListener('click', ()=> takePill());
+
+  // pill visuals clickable
+  pillSlots.forEach(slot => {
+    slot.addEventListener('click', ()=> {
+      if (slot.classList.contains('empty')) { showScreenText('No pill here.'); return; }
+      takePill();
     });
   });
-}
 
-// call init
-init();
+  pcClose.addEventListener('click', ()=> {
+    if (deviceMode === 'mobile') { showScreenText('Use the back button on mobile.'); return; }
+    closeZoomToPC();
+  });
 
-/* ---------- small UX helpers (safety) ---------- */
-function scheduleBreathEvent(){ scheduleBreathEventImpl(); } // alias to function defined later
+  pcPower.addEventListener('click', ()=> {
+    powerOffAction();
+  });
 
-// we defined scheduleBreathEvent earlier; but JS function hoisting requires adjusting; to keep code tidy, wrap scheduling function here:
-function scheduleBreathEventImpl(){
-  if (breathEventTimer) { clearTimeout(breathEventTimer); breathEventTimer = null; }
-  const min = 1200;
-  const max = 8000;
-  const interval = Math.round(max - (panic/100) * (max - min));
-  const jitter = Math.floor(Math.random() * 800) - 400;
-  const next = Math.max(min, interval + jitter);
-  breathEventTimer = setTimeout(()=> { triggerBreath(); scheduleBreathEventImpl(); }, next);
-}
+  openTasksBtn.addEventListener('click', ()=> openTaskOverlayUI());
+  abortBtn.addEventListener('click', ()=> {
+    if (activeTask) {
+      if (confirm('Abort task? This counts as failure.')) finishTask(false, 'Aborted by player.');
+    } else closeTaskOverlay();
+  });
 
-/* Utility small function to rewire scheduleBreathEvent variable to correct implementation */
-scheduleBreathEvent = scheduleBreathEventImpl;
+  taskOverlay.addEventListener('click', (e)=> {
+    if (e.target === taskOverlay && !activeTask) closeTaskOverlay();
+  });
 
-/* Keep UI responsive: click outside overlay closes choices if no active task */
-overlay.addEventListener('click', (e)=>{
-  if (e.target === overlay && !activeTask) closeOverlay();
-});
+  // close jumpscare on click (for safety)
+  jumpscare.addEventListener('click', ()=> {
+    // stop video if playing
+    try { jumpscareVideo.pause(); } catch(e){}
+    jumpscare.style.display = 'none';
+  });
 
-/* Prevent accidental text selection while playing */
-document.addEventListener('selectstart', e => { if (overlayOpen) e.preventDefault(); });
+  // ---------- initialization after device chosen ----------
+  async function initAfterChoose(){
+    // start audio after first user gesture
+    ensureAudio();
+    await loadBreath();
+    // small ambient scheduler
+    startPanicAuto();
+    startTips();
+    startGameTimer();
+    // schedule ambient ticks randomly
+    setInterval(()=> { if (Math.random() < 0.18) playAmbientTick(); }, 1200);
+    // initial UI
+    setPanicUI(); setPillsUI(); setProgressUI(); setActiveUI();
+    renderTaskGrid();
+    showScreenText('You wake up. The room is quiet. Click the PC or press Enter to open tasks.');
+    // small random panic rises to kick things off
+    setTimeout(()=> { panic = 6 + Math.random()*8; setPanicUI(); scheduleBreathEvent(); }, 1200);
+    // tip bubble fade
+    setTimeout(()=> { tipBubble.style.opacity = 0.85; }, 100);
+  }
 
-/* END OF SCRIPT */
+})(); // IIFE end
 </script>
 </body>
 </html>
