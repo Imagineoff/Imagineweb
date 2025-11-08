@@ -1,849 +1,1204 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Roomla — Silent Studio | Pre-Alpha v1.0</title>
-<meta name="description" content="Roomla — short web horror prototype (pre-alpha) by Silent Studio" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  /* ===========================
-     Roomla — Pre-Alpha single file
-     =========================== */
-  :root{
-    --bg:#030305;
-    --muted:#98a3b3;
-    --accent:#9bf;
-    --danger:#ff5a5a;
-    --calm:#66f0a8;
-    --glass: rgba(255,255,255,0.03);
-    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:#000;color:#e8eef6;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; -webkit-font-smoothing:antialiased}
-  .center{max-width:1200px;margin:18px auto;padding:12px}
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .title{font-family:Orbitron,monospace;font-weight:700;letter-spacing:2px}
-  .subtitle{color:var(--muted);font-size:13px}
-  /* scene */
-  .scene{margin-top:12px;display:grid;grid-template-columns:1fr 320px;gap:16px}
-  .room-card{position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 60px rgba(0,0,0,0.7);background:#050406}
-  .room-visual{height:640px;background-size:cover;background-position:center center;position:relative}
-  /* background image will be set inline via style attr */
-  /* interactive layer */
-  .room-layer{position:absolute;inset:0;pointer-events:auto}
-  /* pc hotspot approximate area top-right quadrant lower part */
-  .pc-hotspot{position:absolute; width:220px; height:140px; right:12%; top:14%; transform:translateY(10%); cursor:pointer; border-radius:8px;}
-  .pc-visual{position:absolute; right:12%; top:14%; width:240px;height:160px; transform-origin:center center; display:flex;align-items:center;justify-content:center;pointer-events:none}
-  .pc-visual img{width:100%;height:100%;object-fit:cover;border-radius:8px;filter:contrast(.9) saturate(.85) hue-rotate(2deg)}
-  /* pill icon centered bottom */
-  .pill-visual{position:absolute; left:50%; transform:translateX(-50%); bottom:6%; width:160px;height:72px; display:flex; align-items:center; justify-content:center; gap:12px; pointer-events:none}
-  .pill-slot{width:48px;height:48px;border-radius:8px;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03)}
-  .pill-slot img{width:42px;height:42px;object-fit:contain}
-  .pill-clickable{pointer-events:auto; cursor:pointer}
-  /* right panel */
-  .panel{padding:12px;display:flex;flex-direction:column;gap:12px}
-  .box{background:linear-gradient(180deg,rgba(255,255,255,0.015), rgba(255,255,255,0.006)); border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,0.02)}
-  .metrics{display:flex;flex-direction:column;gap:8px}
-  .metric{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
-  .metric .val{font-weight:700;color:#fff}
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
-  .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:var(--accent);cursor:pointer}
-  .btn.ghost{opacity:.8}
-  .kbd{background:#071018;padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.02);font-family:var(--mono);font-size:12px}
-  /* overlay (zoom/PC view) */
-  .zoom-wrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1200;background:rgba(0,0,0,0.6)}
-  .pc-view{width:min(920px,92%);height:min(560px,78%);background:#05070a;border-radius:10px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;overflow:hidden}
-  .pc-top{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.02)}
-  .pc-screen{flex:1;display:flex;align-items:center;justify-content:center;padding:18px;font-family:var(--mono);color:#9ff; font-size:15px; text-align:center}
-  .pc-bottom{padding:10px;display:flex;gap:8px;align-items:center;justify-content:flex-end}
-  .cooldown-bar{height:8px;background:rgba(255,255,255,0.04);border-radius:6px;overflow:hidden}
-  .cooldown-fill{height:100%;width:0%;background:linear-gradient(90deg,#57f 0%,#9bf 100%);transition:width .25s linear}
-  /* overlay tasks */
-  .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center; z-index:1400;background:rgba(0,0,0,0.72)}
-  .taskbox{width:min(840px,96%);background:#060708;border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.03)}
-  .task-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-  .task-card{background:#081018;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);cursor:pointer;text-align:center;color:#cfe}
-  .task-card:hover{transform:translateY(-4px);transition:transform .12s}
-  /* panic overlay red flash */
-  .panic-overlay{position:fixed;inset:0;pointer-events:none;z-index:1600;background:rgba(0,0,0,0);transition:background .12s linear}
-  /* jumpscare overlay */
-  .jumpscare{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:2200;background:#000}
-  .jumpscare video, .jumpscare img{max-width:100%;max-height:100%;display:block}
-  /* small tips */
-  .tip{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:rgba(0,0,0,0.6);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-size:13px;z-index:2000}
-  /* responsive */
-  @media (max-width:980px){
-    .scene{grid-template-columns:1fr}
-    .room-visual{height:56vh}
-    .pc-visual{display:none}
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>he will never forget</title>
+    <style>
+        /* --- GLOBAL & SETUP --- */
+        :root {
+            --bg-color: #000000;
+            --text-color: #cccccc;
+            --highlight-color: #990000;
+            --pc-bg: #050510;
+            --pc-monitor-bg: #1a1a2a;
+            --pc-border: #333344;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out, transform 1.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .screen.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 10;
+        }
+
+        button {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            background: none;
+            border: 1px solid var(--text-color);
+            color: var(--text-color);
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: var(--highlight-color);
+            color: #ffffff;
+            border-color: var(--highlight-color);
+        }
+
+        h1 {
+            color: var(--highlight-color);
+            font-weight: normal;
+            margin-bottom: 20px;
+        }
+
+        .pc-only { display: none; }
+        .mobile-only { display: none; }
+
+        /* --- 1. INTRO SCREEN --- */
+        #intro-screen {
+            background: #000;
+            z-index: 100;
+        }
+
+        #studio-logo {
+            font-size: 2rem;
+            color: #555;
+            animation: fadeInOut 5s forwards ease-in-out;
+        }
+
+        #device-select {
+            margin-top: 30px;
+            opacity: 0;
+            animation: fadeIn 2s forwards 5s ease-in;
+        }
+
+        #device-select h1 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        #device-select button {
+            margin: 0 10px;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* --- 2. MAIN ROOM --- */
+        #room-screen {
+            background-image: url('https://i.imgur.com/O9vg7SA.jpeg');
+            background-size: cover;
+            background-position: center;
+            z-index: 5;
+            transform: scale(1);
+        }
+
+        #computer-hotspot {
+            position: absolute;
+            /* Visually targeting the PC on the image */
+            top: 55%;
+            left: 58%;
+            width: 28%;
+            height: 30%;
+            cursor: pointer;
+            /* border: 2px dashed rgba(255, 0, 0, 0); */
+            transition: background-color 0.3s;
+        }
+
+        #computer-hotspot:hover {
+            background-color: rgba(255, 0, 0, 0.1);
+        }
+
+        /* --- 3. PC VIEW --- */
+        #pc-screen {
+            background: var(--pc-bg);
+            z-index: 20;
+            transform: scale(1.1); /* Start slightly zoomed for transition */
+        }
+
+        #pc-screen.active {
+            transform: scale(1);
+        }
+
+        #pc-desktop {
+            width: 95%;
+            height: 95%;
+            max-width: 1200px;
+            max-height: 800px;
+            background: var(--pc-monitor-bg);
+            border: 10px solid #111;
+            border-radius: 5px;
+            box-shadow: 0 0 30px rgba(150, 150, 250, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #pc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--pc-border);
+            padding-bottom: 10px;
+            color: #8899ff;
+        }
+
+        #task-count {
+            color: #ffff00;
+        }
+
+        #task-container {
+            flex-grow: 1;
+            margin-top: 20px;
+            padding: 15px;
+            background: #000;
+            border: 1px solid var(--pc-border);
+            overflow-y: auto;
+            font-size: 1.1rem;
+        }
+
+        #pc-controls {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid var(--pc-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #pc-power-off {
+            background: var(--highlight-color);
+            color: white;
+            border-color: var(--highlight-color);
+            font-size: 0.9rem;
+        }
+        #pc-power-off:hover {
+            background: #ff0000;
+        }
+        
+        #pc-rebooting {
+            display: none;
+            color: #00ff00;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        #reboot-bar-container {
+            width: 80%;
+            height: 30px;
+            border: 2px solid #00ff00;
+            margin-top: 20px;
+        }
+
+        #reboot-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: #00ff00;
+            transition: width 0.1s linear;
+        }
+
+        /* --- PC TASKS STYLING --- */
+        .task-description {
+            color: #0f0;
+            margin-bottom: 20px;
+        }
+
+        #task-type-input {
+            width: 100%;
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        #task-type-code {
+            color: #ff0;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            word-wrap: break-word;
+        }
+
+        #task-reaction-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .reaction-square {
+            width: 100px;
+            height: 100px;
+            background: #333;
+            border: 2px solid #555;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+        .reaction-square.target {
+            background: #00ff00;
+        }
+
+        #task-memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 440px;
+            margin-top: 20px;
+        }
+
+        .memory-card {
+            width: 100px;
+            height: 100px;
+            background: #444;
+            border: 2px solid #777;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            color: #444;
+            user-select: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .memory-card.flipped {
+            background: #999;
+            color: #fff;
+        }
+        .memory-card.matched {
+            background: #0f0;
+            color: #000;
+            cursor: default;
+        }
+
+
+        /* --- HUD & UI --- */
+        #pills-hud {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 30;
+            transition: transform 0.2s ease;
+        }
+        #pills-hud:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        #pill-icon {
+            width: 30px;
+            height: 30px;
+            filter: brightness(0.8);
+        }
+
+        #pill-count {
+            font-size: 1.8rem;
+            color: #ffffff;
+            margin-left: 15px;
+            font-weight: bold;
+        }
+
+        #mobile-back-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: rgba(100, 0, 0, 0.7);
+            color: #fff;
+            border-radius: 5px;
+            z-index: 30;
+            cursor: pointer;
+        }
+
+        #tips-hud {
+            position: absolute;
+            bottom: 120px;
+            width: 100%;
+            text-align: center;
+            color: #aaa;
+            font-size: 1.1rem;
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        /* --- 4. GAME OVER / WIN SCREENS --- */
+        #game-over-screen, #win-screen {
+            background: #000;
+            z-index: 9998;
+        }
+        #game-over-screen h1, #win-screen h1 {
+            text-align: center;
+            font-size: 2rem;
+        }
+        #game-over-screen button, #win-screen button {
+            margin-top: 30px;
+        }
+
+        /* --- 5. EFFECTS & OVERLAYS --- */
+        #flicker-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+            animation: flicker 4s infinite alternate step-end;
+        }
+        
+        #panic-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 60%, rgba(255,0,0,0.4) 100%);
+            opacity: 0;
+            z-index: 25;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+
+        /* High Panic Effects */
+        .high-panic-blur {
+            filter: blur(1px);
+        }
+        .high-panic-shake {
+            animation: shake 0.3s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0; }
+            5% { opacity: 1; }
+            10% { opacity: 0; }
+            30% { opacity: 1; }
+            32% { opacity: 0; }
+            60% { opacity: 0; }
+            61% { opacity: 0.5; }
+            62% { opacity: 0; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(2px, -1px); }
+            50% { transform: translate(-1px, 2px); }
+            75% { transform: translate(1px, -2px); }
+        }
+
+        /* --- 6. JUMPSCARE --- */
+        #jumpscare-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 9999;
+            display: none;
+            background: #000;
+        }
+
+        /* --- RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            #computer-hotspot {
+                top: 50%;
+                left: 50%;
+                width: 40%;
+                height: 35%;
+            }
+            #pills-hud {
+                bottom: 20px;
+            }
+            #tips-hud {
+                bottom: 90px;
+                font-size: 0.9rem;
+            }
+            .reaction-square {
+                width: 80px;
+                height: 80px;
+            }
+            .memory-card {
+                width: 70px;
+                height: 70px;
+                font-size: 2rem;
+            }
+            #task-memory-grid {
+                max-width: 320px;
+            }
+            #pc-desktop {
+                width: 100%;
+                height: 100%;
+                max-width: 100%;
+                max-height: 100%;
+                border: none;
+                border-radius: 0;
+            }
+            #pc-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="center">
-  <div class="topbar">
-    <div>
-      <div class="title">ROOMLA • Silent Studio</div>
-      <div class="subtitle">Pre-alpha v1.0 — short prototype</div>
-    </div>
-    <div class="subtitle">Goal: complete <strong>10</strong> childlike tasks</div>
-  </div>
 
-  <!-- START: device choice modal -->
-  <div id="startModal" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.85)">
-    <div style="background:#060708;padding:22px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);width:92%;max-width:720px;text-align:center">
-      <h2 style="margin:0 0 8px;font-family:Orbitron,monospace">ROOMLA — Choose device</h2>
-      <p style="color:var(--muted);margin:0 0 14px">Select the device you play on. This unlocks audio and input. Mobile mode disables Escape and uses touch controls.</p>
-      <div style="display:flex;gap:12px;justify-content:center;margin-top:12px">
-        <button class="btn" id="choosePC">Play on PC</button>
-        <button class="btn" id="chooseMobile">Play on Mobile</button>
-      </div>
-      <div style="color:var(--muted);font-size:13px;margin-top:12px">Clicking either starts audio and enables the prototype.</div>
-    </div>
-  </div>
+    <div id="game-container">
 
-  <div class="scene">
-    <!-- LEFT: room visual -->
-    <div class="room-card">
-      <div id="roomVisual" class="room-visual" style="background-image:url('https://i.imgur.com/O9vg7SA.jpeg');">
-        <div class="room-layer" id="roomLayer">
-          <!-- PC hotspot (in right-top quadrant lower part) -->
-          <div class="pc-hotspot" id="pcHotspot" title="PC — click to zoom"></div>
-          <!-- Visual PC (for zoom preview) -->
-          <div class="pc-visual" id="pcVisual">
-            <!-- we'll draw a small monitor-like overlay -->
-            <img id="pcThumb" src="" alt="pc-thumb">
-          </div>
-
-          <!-- Pills visual centered bottom -->
-          <div class="pill-visual" id="pillsVisual" style="pointer-events:auto">
-            <!-- five clickable pill slots; we'll fill with your pill icon -->
-            <div class="pill-slot pill-clickable" data-idx="0"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
-            <div class="pill-slot pill-clickable" data-idx="1"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
-            <div class="pill-slot pill-clickable" data-idx="2"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
-            <div class="pill-slot pill-clickable" data-idx="3"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
-            <div class="pill-slot pill-clickable" data-idx="4"><img src="https://i.imgur.com/vz9eh1m.jpeg" alt="pill"></div>
-          </div>
+        <div id="intro-screen" class="screen active">
+            <div id="studio-logo">Silent Studio</div>
+            <div id="device-select" style="display: none;">
+                <h1>Choose your device:</h1>
+                <button id="btn-pc">PC</button> | <button id="btn-mobile">Mobile</button>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <!-- RIGHT: info -->
-    <div class="room-card panel">
-      <div class="box">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:700">GAME</div>
-          <div style="color:var(--muted);font-size:13px">Prototype</div>
+        <div id="room-screen" class="screen">
+            <div id="computer-hotspot"></div>
+            </div>
+
+        <div id="pc-screen" class="screen">
+            <div id="pc-desktop" style="display: none;">
+                <div id="pc-header">
+                    <h3>TASKS REMAINING: <span id="task-count">10</span></h3>
+                    <span id="pc-time">00:00</span>
+                </div>
+                <div id="task-container">
+                    </div>
+                <div id="pc-controls">
+                    <span class="pc-only">Press ESC to leave PC</span>
+                    <span class="mobile-only">Use 'Back' button to leave</span>
+                    <button id="pc-power-off">Turn Off PC</button>
+                </div>
+            </div>
+            <div id="pc-rebooting" style="display: none;">
+                <p>Rebooting PC...</p>
+                <div id="reboot-bar-container">
+                    <div id="reboot-bar-fill"></div>
+                </div>
+            </div>
         </div>
-        <div style="margin-top:8px;color:var(--muted);font-size:13px">Complete 10 childlike tasks while managing panic and pills. If panic reaches critical level, breathing events and eventually a jumpscare will occur.</div>
-      </div>
 
-      <div class="box metrics">
-        <div class="metric"><div>Pills:</div><div class="val" id="uiPills">5</div></div>
-        <div class="metric"><div>Panic:</div><div class="val" id="uiPanic">0%</div></div>
-        <div class="metric"><div>Active Task:</div><div class="val" id="uiActive">None</div></div>
-        <div class="metric"><div>Progress:</div><div class="val" id="uiProgress">0 / 10</div></div>
-        <div class="metric"><div>Time left:</div><div class="val" id="uiTimer">10:00</div></div>
-      </div>
-
-      <div class="box">
-        <div style="font-weight:700;margin-bottom:8px">Controls</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <div class="kbd">Open PC: Click PC / Enter</div>
-          <div class="kbd">Take pill: P or click</div>
-          <div class="kbd">Power off: Power button</div>
-          <div class="kbd">Abort task: Esc (PC only)</div>
+        <div id="game-over-screen" class="screen">
+            <h1>GAME OVER</h1>
+            <button id="restart-btn">Restart</button>
         </div>
-      </div>
 
-      <div class="box" style="margin-top:auto">
-        <div style="display:flex;gap:8px">
-          <button class="btn ghost" id="btnOpenPC">Open PC</button>
-          <button class="btn" id="btnPower">POWER OFF</button>
-          <button class="btn" id="btnTakePill">Take Pill (P)</button>
+        <div id="win-screen" class="screen">
+            <h1>You remembered everything.</h1>
+            <h1>But at what cost?</h1>
+            <button id="restart-btn-win">Restart</button>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- PC Zoom view -->
-<div class="zoom-wrap" id="zoomWrap" aria-hidden="true">
-  <div class="pc-view" id="pcView" role="dialog" aria-modal="true">
-    <div class="pc-top">
-      <div style="font-family:var(--mono);font-weight:700" id="pcTitle">OLD PC — TASKS</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div class="cooldown-bar" style="width:160px">
-          <div class="cooldown-fill" id="cooldownFill"></div>
+        <div id="pills-hud" style="display: none;">
+            <img id="pill-icon" src="https://i.imgur.com/vz9eh1m.jpeg" alt="Pills">
+            <span id="pill-count">5</span>
         </div>
-        <div class="kbd" id="pcPowerState">ON</div>
-        <button class="btn ghost" id="pcClose">Back (Esc)</button>
-      </div>
-    </div>
-    <div class="pc-screen" id="pcScreenInner">Click a task to start. Complete 10 total tasks.</div>
-    <div class="pc-bottom">
-      <div style="color:var(--muted);font-size:13px;margin-right:auto">Tips: <span id="uiTip">Open PC and choose a task.</span></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn" id="openTasks">Tasks</button>
-        <button class="btn ghost" id="pcPower">Power Off</button>
-      </div>
-    </div>
-  </div>
-</div>
+        
+        <div id="mobile-back-btn" class="mobile-only" style="display: none; z-index: 30;">Back</div>
+        <div id="tips-hud"></div>
+        <div id="flicker-overlay"></div>
+        <div id="panic-overlay"></div>
 
-<!-- Tasks overlay -->
-<div class="overlay" id="taskOverlay" aria-hidden="true">
-  <div class="taskbox" role="document">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div style="font-weight:800;font-family:var(--mono)" id="taskHeaderTitle">Tasks</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div style="color:var(--muted);font-size:13px">Task timer: <span id="taskCountdown">--</span></div>
-        <button class="btn ghost" id="abortBtn">Abort</button>
-      </div>
+        <video id="jumpscare-video" src="https://files.catbox.moe/cskqo9.mov" playsinline preload="auto"></video>
+
+        <audio id="audio-breathing" src="https://files.catbox.moe/crj8v7.mp3" loop preload="auto"></audio>
+
     </div>
 
-    <div id="taskBody" style="margin-top:12px">
-      <div class="task-grid" id="taskGrid">
-        <!-- cards filled by JS -->
-      </div>
-    </div>
-  </div>
-</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
 
-<!-- Panic overlay -->
-<div class="panic-overlay" id="panicOverlay" aria-hidden="true"></div>
+            // --- DOM ELEMENTS ---
+            const gameContainer = document.getElementById('game-container');
+            const screens = {
+                intro: document.getElementById('intro-screen'),
+                room: document.getElementById('room-screen'),
+                pc: document.getElementById('pc-screen'),
+                gameOver: document.getElementById('game-over-screen'),
+                win: document.getElementById('win-screen')
+            };
+            const studioLogo = document.getElementById('studio-logo');
+            const deviceSelect = document.getElementById('device-select');
+            const btnPC = document.getElementById('btn-pc');
+            const btnMobile = document.getElementById('btn-mobile');
 
-<!-- jumpscare -->
-<div class="jumpscare" id="jumpscare" aria-hidden="true">
-  <!-- try to play the mov file; if it fails, fallback to text -->
-  <video id="jumpscareVideo" src="https://files.catbox.moe/cskqo9.mov" preload="auto" playsinline></video>
-</div>
+            const computerHotspot = document.getElementById('computer-hotspot');
+            const pillsHUD = document.getElementById('pills-hud');
+            const pillCount = document.getElementById('pill-count');
+            const mobileBackBtn = document.getElementById('mobile-back-btn');
+            const tipsHUD = document.getElementById('tips-hud');
 
-<!-- tip bubble -->
-<div class="tip" id="tipBubble">Press Enter or click the PC to open tasks.</div>
+            const pcDesktop = document.getElementById('pc-desktop');
+            const pcRebooting = document.getElementById('pc-rebooting');
+            const rebootBarFill = document.getElementById('reboot-bar-fill');
+            const taskCount = document.getElementById('task-count');
+            const pcTime = document.getElementById('pc-time');
+            const taskContainer = document.getElementById('task-container');
+            const pcPowerOff = document.getElementById('pc-power-off');
 
-<script>
-/* =========================
-   Roomla v1.0 — single file script
-   ========================= */
+            const panicOverlay = document.getElementById('panic-overlay');
+            const jumpscareVideo = document.getElementById('jumpscare-video');
+            const audioBreathing = document.getElementById('audio-breathing');
 
-(function(){
-  // ---------- config ----------
-  const ROOM_IMG = 'https://i.imgur.com/O9vg7SA.jpeg'; // room background
-  const PILL_IMG = 'https://i.imgur.com/vz9eh1m.jpeg'; // pill icon
-  const BREATH_MP3 = 'https://files.catbox.moe/crj8v7.mp3'; // breathing audio
-  const JUMPSCARE_VIDEO = 'https://files.catbox.moe/cskqo9.mov'; // mov file (may or may not autoplay)
-  const MAX_PILLS = 5;
-  const TARGET_TASKS = 10;
-  const GAME_DURATION_MS = 10 * 60 * 1000; // 10 minutes
-  // panic auto drift config
-  const PANIC_MIN = 0;
-  const PANIC_MAX = 100;
+            // --- GAME STATE ---
+            const gameState = {
+                device: 'pc',
+                currentView: 'intro',
+                panic: 0,
+                pills: 5,
+                tasksCompleted: 0,
+                tasksTotal: 10,
+                pcOn: true,
+                pcRebooting: false,
+                gameRunning: false,
+                highPanicActive: false,
+                gameOver: false,
+                audioCtx: null,
+                ambientHum: null,
+                timers: {
+                    panic: null,
+                    tip: null,
+                    ambient: null,
+                    pcClock: null
+                },
+                currentTask: null
+            };
 
-  // ---------- state ----------
-  let deviceMode = null; // "pc" or "mobile"
-  let audioCtx = null;
-  let ambientGain = null;
-  let breathAudioBuffer = null;
-  let breathSource = null;
-  let breathingPlaying = false;
-  let panic = 0;
-  let pills = MAX_PILLS;
-  let progress = 0;
-  let activeTask = null;
-  let taskTimer = null;
-  let taskTimeLeft = 0;
-  let pcCooldown = 0; // seconds remaining before PC usable again after power-off
-  let pcCooldownInterval = null;
-  let gameStartAt = Date.now();
-  let gameTimerInterval = null;
-  let tipInterval = null;
-  let panicAutoInterval = null;
-  let breathEventTimeout = null;
-  let jumpscareTriggered = false;
-  let pcOpen = false;
+            const tips = [
+                "Take pills to stay calm.",
+                "The breathing is getting closer...",
+                "You can't stay here forever.",
+                "You must complete the tasks.",
+                "Turning off the PC helps... but wastes time.",
+                "What did you do?",
+                "She won't let you forget."
+            ];
 
-  // ---------- DOM ----------
-  const startModal = document.getElementById('startModal');
-  const choosePC = document.getElementById('choosePC');
-  const chooseMobile = document.getElementById('chooseMobile');
+            // --- INTRO & INIT ---
 
-  const roomVisual = document.getElementById('roomVisual');
-  const pcHotspot = document.getElementById('pcHotspot');
-  const pcVisual = document.getElementById('pcVisual');
-  const pcThumb = document.getElementById('pcThumb');
-  const pillsVisual = document.getElementById('pillsVisual');
-  const pillSlots = Array.from(document.querySelectorAll('.pill-slot'));
+            // Show device select after logo fades
+            setTimeout(() => {
+                studioLogo.style.display = 'none';
+                deviceSelect.style.display = 'block';
+            }, 5100);
 
-  const uiPills = document.getElementById('uiPills');
-  const uiPanic = document.getElementById('uiPanic');
-  const uiActive = document.getElementById('uiActive');
-  const uiProgress = document.getElementById('uiProgress');
-  const uiTimer = document.getElementById('uiTimer');
+            btnPC.addEventListener('click', () => initGame('pc'));
+            btnMobile.addEventListener('click', () => initGame('mobile'));
 
-  const btnOpenPC = document.getElementById('btnOpenPC');
-  const btnPower = document.getElementById('btnPower');
-  const btnTakePill = document.getElementById('btnTakePill');
+            function initGame(device) {
+                gameState.device = device;
+                initAudio();
+                
+                if (device === 'mobile') {
+                    document.querySelectorAll('.mobile-only').forEach(el => el.style.display = 'block');
+                } else {
+                    document.querySelectorAll('.pc-only').forEach(el => el.style.display = 'block');
+                }
 
-  const zoomWrap = document.getElementById('zoomWrap');
-  const pcView = document.getElementById('pcView');
-  const pcClose = document.getElementById('pcClose');
-  const pcPower = document.getElementById('pcPower');
-  const pcPowerState = document.getElementById('pcPowerState');
-  const pcScreenInner = document.getElementById('pcScreenInner');
-  const openTasksBtn = document.getElementById('openTasks');
-  const uiTip = document.getElementById('uiTip');
-  const cooldownFill = document.getElementById('cooldownFill');
+                pillsHUD.style.display = 'flex';
+                showScreen('room');
+                startGameLoop();
+            }
 
-  const taskOverlay = document.getElementById('taskOverlay');
-  const taskGrid = document.getElementById('taskGrid');
-  const taskHeaderTitle = document.getElementById('taskHeaderTitle');
-  const taskCountdown = document.getElementById('taskCountdown');
-  const abortBtn = document.getElementById('abortBtn');
+            // --- AUDIO HANDLING ---
+            function initAudio() {
+                if (gameState.audioCtx) return;
+                try {
+                    gameState.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Create low ambient hum
+                    const oscillator = gameState.audioCtx.createOscillator();
+                    const gainNode = gameState.audioCtx.createGain();
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(50, gameState.audioCtx.currentTime); // 50Hz hum
+                    gainNode.gain.setValueAtTime(0.02, gameState.audioCtx.currentTime); // Very quiet
+                    oscillator.connect(gainNode).connect(gameState.audioCtx.destination);
+                    oscillator.start();
+                    gameState.ambientHum = oscillator;
 
-  const panicOverlay = document.getElementById('panicOverlay');
-  const jumpscare = document.getElementById('jumpscare');
-  const jumpscareVideo = document.getElementById('jumpscareVideo');
+                    // Prepare other sounds
+                    audioBreathing.play().then(() => audioBreathing.pause()).catch(e => console.warn("Audio play blocked"));
+                    jumpscareVideo.load();
 
-  const tipBubble = document.getElementById('tipBubble');
+                } catch (e) {
+                    console.error("Web Audio API is not supported in this browser", e);
+                }
+            }
 
-  // preload visuals
-  pcThumb.src = ROOM_IMG; // just a slice for effect (will scale during zoom)
+            function playCreakSound() {
+                if (!gameState.audioCtx) return;
+                try {
+                    const duration = 0.3;
+                    const sampleRate = gameState.audioCtx.sampleRate;
+                    const buffer = gameState.audioCtx.createBuffer(1, sampleRate * duration, sampleRate);
+                    const data = buffer.getChannelData(0);
 
-  // ---------- audio helpers ----------
-  function ensureAudio(){
-    if (audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    ambientGain = audioCtx.createGain(); ambientGain.gain.value = 0.02; ambientGain.connect(audioCtx.destination);
-  }
+                    for (let i = 0; i < data.length; i++) {
+                        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) * 0.1; // Fading noise
+                    }
+                    
+                    const noise = gameState.audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    
+                    const bqFilter = gameState.audioCtx.createBiquadFilter();
+                    bqFilter.type = "lowpass";
+                    bqFilter.frequency.setValueAtTime(600 + Math.random() * 400, gameState.audioCtx.currentTime);
+                    
+                    noise.connect(bqFilter).connect(gameState.audioCtx.destination);
+                    noise.start();
+                } catch(e) {
+                    console.warn("Could not play creak sound", e);
+                }
+            }
 
-  async function loadBreath(){
-    try {
-      ensureAudio();
-      const resp = await fetch(BREATH_MP3);
-      const ab = await resp.arrayBuffer();
-      breathAudioBuffer = await audioCtx.decodeAudioData(ab);
-    } catch(e){
-      console.warn('Breath load failed', e);
-    }
-  }
+            // --- GAME LOOP & STATE ---
+            function startGameLoop() {
+                if (gameState.gameRunning) return;
+                gameState.gameRunning = true;
 
-  // play a one-shot breathing audio (slightly pitched by panic)
-  function playBreathOnce(){
-    if (!breathAudioBuffer || !audioCtx) return;
-    const s = audioCtx.createBufferSource();
-    s.buffer = breathAudioBuffer;
-    const g = audioCtx.createGain(); g.gain.value = 0.6 * Math.min(1, panic/100 + 0.2);
-    s.connect(g); g.connect(audioCtx.destination);
-    // pitch variation based on panic
-    s.playbackRate.value = 1 + (panic - 50)/400; // small pitch change
-    s.start();
-    // stop reference
-    setTimeout(()=> { try { s.stop(); } catch(e){} }, (s.buffer.duration + 2000));
-  }
+                // Main panic timer
+                gameState.timers.panic = setInterval(updatePanic, 1000);
+                
+                // Random tips
+                gameState.timers.tip = setInterval(showRandomTip, 35000);
+                setTimeout(() => showTip("Take pills to stay calm."), 5000);
+                
+                // Random ambient events
+                gameState.timers.ambient = setTimeout(triggerRandomEvent, 20000 + Math.random() * 20000);
+            }
 
-  // ambient random click / hum — synthesized small noises
-  function playAmbientTick(){
-    ensureAudio();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain(); g.gain.value = 0.015;
-    o.type = Math.random() < 0.6 ? 'sine' : 'triangle';
-    o.frequency.value = 60 + Math.random()*240;
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25 + Math.random()*0.4);
-    setTimeout(()=>{ try { o.stop(); } catch(e){} }, 350 + Math.random()*400);
-  }
+            function stopGameLoop() {
+                gameState.gameRunning = false;
+                Object.values(gameState.timers).forEach(timer => {
+                    if (timer) clearInterval(timer);
+                    if (timer) clearTimeout(timer);
+                });
+            }
 
-  // big loud burst for jumpscare (synth + noise)
-  function jumpscareSound(){
-    ensureAudio();
-    // oscillator
-    const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 80;
-    const og = audioCtx.createGain(); og.gain.value = 0.0005;
-    o.connect(og); og.connect(audioCtx.destination);
-    o.start();
-    og.gain.linearRampToValueAtTime(1.2, audioCtx.currentTime + 0.05);
-    // noise
-    const bufferSize = audioCtx.sampleRate * 0.25;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i=0;i<bufferSize;i++) data[i] = (Math.random()*2 - 1) * Math.exp(-i / bufferSize * 3);
-    const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
-    const ng = audioCtx.createGain(); ng.gain.value = 0.001;
-    noise.connect(ng); ng.connect(audioCtx.destination);
-    noise.start();
-    ng.gain.linearRampToValueAtTime(0.9, audioCtx.currentTime + 0.06);
-    setTimeout(()=>{ ng.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.16); noise.stop(audioCtx.currentTime + 0.18); }, 100);
-    og.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.16);
-    setTimeout(()=>{ try { o.stop(); } catch(e){} }, 220);
-  }
+            function updatePanic() {
+                if (gameState.gameOver || gameState.pcRebooting) return;
 
-  // ---------- UI helpers ----------
-  function setPanicUI(){
-    uiPanic.textContent = `${Math.round(panic)}%`;
-    const alpha = Math.min(0.8, panic/150);
-    panicOverlay.style.background = `rgba(180,0,0,${alpha})`;
-    // small vignette flicker if panic high
-    if (panic >= 80) panicOverlay.style.transition = 'background .06s linear';
-    else panicOverlay.style.transition = 'background .18s linear';
-  }
-  function setPillsUI(){
-    uiPills.textContent = String(pills);
-    pillSlots.forEach((slot, idx)=>{
-      if (idx < (MAX_PILLS - pills)) slot.classList.add('empty');
-      else slot.classList.remove('empty');
-    });
-  }
-  function setProgressUI(){
-    uiProgress.textContent = `${progress} / ${TARGET_TASKS}`;
-  }
-  function setActiveUI(){
-    uiActive.textContent = activeTask ? activeTask : 'None';
-  }
+                let panicIncrease = 0.15; // Base rate
+                if (gameState.pills <= 2) panicIncrease = 0.25;
+                if (gameState.pills === 0) panicIncrease = 0.5;
+                if (gameState.currentView === 'pc') panicIncrease *= 1.8; // Panic faster on PC
 
-  // ---------- Panic auto behavior ----------
-  // random small jumps + slow drift; call often
-  function startPanicAuto(){
-    if (panicAutoInterval) clearInterval(panicAutoInterval);
-    panicAutoInterval = setInterval(()=>{
-      // small random jump
-      const rnd = Math.random();
-      if (rnd < 0.15){
-        // occasional small jump
-        panic = Math.min(PANIC_MAX, panic + (6 + Math.random()*12));
-      } else {
-        // gentle drift up or down slightly
-        panic = Math.max(0, panic + (Math.random() - 0.48) * 1.8);
-      }
-      setPanicUI();
-      // occasionally play ambient tick
-      if (Math.random() < 0.12) playAmbientTick();
-      // if panic above threshold, schedule breath event
-      if (panic >= 80) scheduleBreathEvent();
-    }, 900);
-  }
+                if (!gameState.pcOn) {
+                    // Slowly decrease panic when PC is off
+                    gameState.panic = Math.max(0, gameState.panic - 0.2);
+                } else {
+                    gameState.panic = Math.min(100, gameState.panic + panicIncrease);
+                }
+                
+                //console.log("Panic:", gameState.panic);
+                checkPanicState();
+            }
 
-  // breath event scheduling (if panic >= 80)
-  function scheduleBreathEvent(){
-    if (breathEventTimeout) { clearTimeout(breathEventTimeout); breathEventTimeout = null; }
-    if (panic < 80) return;
-    const min = 700; const max = 2200;
-    const next = Math.max(min, Math.floor(max - (panic - 80) * 20) + (Math.random()*400 - 200));
-    breathEventTimeout = setTimeout(()=> { playBreathOnce(); /* visual hint */ flashPanicPulse(); /* consequence if active task */ handleBreathDuringTask(); scheduleBreathEvent(); }, next);
-  }
+            function checkPanicState() {
+                if (gameState.panic >= 80 && !gameState.highPanicActive) {
+                    // Start high panic
+                    gameState.highPanicActive = true;
+                    audioBreathing.currentTime = 0;
+                    audioBreathing.play().catch(e => console.warn("Breathing audio failed"));
+                    gameContainer.classList.add('high-panic-blur', 'high-panic-shake');
+                    panicOverlay.style.opacity = 0.4 + (Math.random() * 0.2);
+                    showTip("The breathing is getting closer...");
+                } else if (gameState.panic < 80 && gameState.highPanicActive) {
+                    // End high panic
+                    gameState.highPanicActive = false;
+                    audioBreathing.pause();
+                    gameContainer.classList.remove('high-panic-blur', 'high-panic-shake');
+                    panicOverlay.style.opacity = 0;
+                }
 
-  function flashPanicPulse(){
-    panicOverlay.style.transition = 'background .08s linear';
-    panicOverlay.style.background = 'rgba(200,0,0,0.8)';
-    setTimeout(()=> { if (!jumpscareTriggered) panicOverlay.style.background = `rgba(180,0,0,${Math.min(0.6, panic/150)})`; }, 240);
-  }
+                if (gameState.highPanicActive) {
+                     panicOverlay.style.opacity = 0.3 + (gameState.panic - 80) / 20 * 0.4;
+                }
 
-  // if breath happens and player is at PC doing a task, require power off quickly
-  function handleBreathDuringTask(){
-    if (activeTask && pcOpen){
-      // small grace that depends on panic
-      const base = 1500; const grace = Math.max(500, base - panic*10);
-      let handled = false;
-      // set ephemeral handler for power off
-      const onPower = function onceHandler(){
-        handled = true;
-        // abort active task (counts as fail)
-        finishTask(false, 'Power cut during breath (abort).');
-      };
-      pcPower.addEventListener('click', onPower, {once:true});
-      setTimeout(()=> {
-        if (!handled){
-          // failed to power off => penalty
-          if (pills > 0) { pills = Math.max(0, pills - 1); setPillsUI(); showScreenText('You dropped a pill in panic (lost 1).'); }
-          else { panic = Math.min(PANIC_MAX, panic + 18); setPanicUI(); }
-          if (activeTask) finishTask(false, 'You froze — task failed.');
-        }
-      }, grace + 30);
-    }
-  }
+                if (gameState.panic >= 100) {
+                    triggerJumpscare();
+                }
+            }
 
-  // ---------- game timer ----------
-  function startGameTimer(){
-    gameStartAt = Date.now();
-    if (gameTimerInterval) clearInterval(gameTimerInterval);
-    gameTimerInterval = setInterval(()=> {
-      const rem = Math.max(0, GAME_DURATION_MS - (Date.now() - gameStartAt));
-      const mm = Math.floor(rem/60000);
-      const ss = Math.floor((rem%60000)/1000).toString().padStart(2,'0');
-      uiTimer.textContent = `${mm}:${ss}`;
-      if (rem <= 0){
-        clearInterval(gameTimerInterval);
-        gameOver(false, 'Time ran out.');
-      }
-    }, 700);
-  }
+            // --- UI & HELPER FUNCTIONS ---
+            function showScreen(screenName) {
+                Object.values(screens).forEach(s => s.classList.remove('active'));
+                if (screens[screenName]) {
+                    screens[screenName].classList.add('active');
+                    gameState.currentView = screenName;
+                }
+            }
 
-  // ---------- UI tips ----------
-  const TIPS = [
-    'Press P or click a pill to calm down.',
-    'If you hear breathing, power off the PC quickly to abort tasks.',
-    'Turning off PC starts a 30s cooldown before reopening.',
-    'Complete 10 tasks to reach the ending.',
-    'Mobile mode disables Escape; use touch controls.',
-  ];
-  function startTips(){
-    let i = 0;
-    uiTip.textContent = TIPS[i];
-    if (tipInterval) clearInterval(tipInterval);
-    tipInterval = setInterval(()=> {
-      i = (i+1) % TIPS.length;
-      uiTip.textContent = TIPS[i];
-      tipBubble.textContent = TIPS[i];
-    }, 4500);
-  }
+            function showTip(message) {
+                tipsHUD.textContent = message;
+                tipsHUD.style.opacity = 1;
+                setTimeout(() => {
+                    tipsHUD.style.opacity = 0;
+                }, 5000);
+            }
 
-  // ---------- tasks (placeholders) ----------
-  // We'll generate a pool of simple tasks; total required is 10
-  const TASK_POOL = ['memory','typing','eat','pac','repair','memory','typing','eat','repair','pac'];
+            function showRandomTip() {
+                if (gameState.gameOver) return;
+                const tip = tips[Math.floor(Math.random() * tips.length)];
+                showTip(tip);
+            }
 
-  function renderTaskGrid(){
-    taskGrid.innerHTML = '';
-    TASK_POOL.forEach((t, idx)=>{
-      const el = document.createElement('div');
-      el.className = 'task-card';
-      el.dataset.task = t;
-      el.dataset.order = idx;
-      el.textContent = `${t.toUpperCase()} — Task ${idx+1}`;
-      el.addEventListener('click', ()=> {
-        startTaskInstance(t, idx);
-      });
-      taskGrid.appendChild(el);
-    });
-  }
+            function triggerRandomEvent() {
+                if (gameState.gameOver) return;
+                
+                // Visual flicker
+                const flicker = document.getElementById('flicker-overlay');
+                flicker.style.animation = 'none';
+                void flicker.offsetWidth; // Trigger reflow
+                flicker.style.animation = 'flicker 0.2s 1 step-end';
+                
+                // Random sound
+                if (Math.random() > 0.3) {
+                    playCreakSound();
+                }
 
-  // ---------- task lifecycle ----------
-  function startTaskInstance(kind, index){
-    if (activeTask) { showScreenText('Finish current task first.'); return; }
-    activeTask = `${kind}#${index+1}`;
-    setActiveUI();
-    openTaskOverlay(kind);
-    // set per-task durations
-    let dur = 50;
-    if (kind === 'typing') dur = 75;
-    if (kind === 'memory') dur = 60;
-    if (kind === 'eat') dur = 45;
-    if (kind === 'pac') dur = 55;
-    if (kind === 'repair') dur = 50;
-    taskTimeLeft = dur;
-    taskCountdown.textContent = `${taskTimeLeft}s`;
-    if (taskTimer) clearInterval(taskTimer);
-    taskTimer = setInterval(()=> {
-      taskTimeLeft--;
-      taskCountdown.textContent = `${taskTimeLeft}s`;
-      if (taskTimeLeft <= 0){
-        clearInterval(taskTimer);
-        taskTimer = null;
-        finishTask(false, 'Time expired.');
-      }
-    }, 1000);
-  }
+                // Reschedule
+                gameState.timers.ambient = setTimeout(triggerRandomEvent, 30000 + Math.random() * 30000); // 30-60s
+            }
 
-  function finishTask(success, reason){
-    if (!activeTask) return;
-    // close UI
-    closeTaskOverlay();
-    if (taskTimer) { clearInterval(taskTimer); taskTimer = null; }
-    const prev = activeTask;
-    activeTask = null;
-    setActiveUI();
-    if (success){
-      progress++;
-      setProgressUI();
-      panic = Math.max(0, panic - (8 + Math.random()*8));
-      setPanicUI();
-      showScreenText('Task completed. Progress +' + 1);
-      playAmbientTick();
-      if (progress >= TARGET_TASKS) {
-        gameOver(true, 'You forced a memory to return.');
-        return;
-      }
-    } else {
-      panic = Math.min(100, panic + (10 + Math.random()*10));
-      setPanicUI();
-      showScreenText(reason || 'Task failed.');
-    }
-  }
+            // --- PANIC SYSTEM ---
+            pillsHUD.addEventListener('click', takePill);
 
-  // ---------- open / close overlays ----------
-  function openZoomToPC(){
-    // if cooldown active, show bar
-    if (pcCooldown > 0){
-      showScreenText('PC is cooling down. Wait ' + pcCooldown + 's.');
-      return;
-    }
-    zoomWrap.style.display = 'flex';
-    zoomWrap.setAttribute('aria-hidden','false');
-    pcOpen = true;
-    openTaskOverlayUI(); // set tasks inside pc view available via button
-    setActiveUI();
-  }
-  function closeZoomToPC(){
-    zoomWrap.style.display = 'none';
-    zoomWrap.setAttribute('aria-hidden','true');
-    pcOpen = false;
-    // when closing PC view, small panic decay
-    panic = Math.max(0, panic - 1.5);
-    setPanicUI();
-  }
+            function takePill() {
+                if (gameState.pills > 0 && !gameState.gameOver) {
+                    gameState.pills--;
+                    pillCount.textContent = gameState.pills;
+                    gameState.panic = Math.max(0, gameState.panic - 40); // Significant reduction
+                    
+                    // Jolt effect
+                    gameContainer.style.transition = 'transform 0.1s';
+                    gameContainer.style.transform = 'scale(1.02)';
+                    setTimeout(() => gameContainer.style.transform = 'scale(1)', 100);
 
-  function openTaskOverlay(kind){
-    // show tasks overlay (full list of small tasks)
-    renderTaskGrid();
-    taskOverlay.style.display = 'flex';
-    taskOverlay.setAttribute('aria-hidden','false');
-    // if starting a specific kind, we replaced content via startTaskInstance
-    // otherwise, grid clicking will start tasks
-  }
-  function closeTaskOverlay(){
-    taskOverlay.style.display = 'none';
-    taskOverlay.setAttribute('aria-hidden','true');
-  }
+                    checkPanicState(); // Update visuals immediately
+                    
+                    if (gameState.pills === 0) {
+                        showTip("You are out of pills... you're on your own.");
+                    }
+                }
+            }
 
-  // helper: open overlay wrapper when clicking "Tasks" button
-  function openTaskOverlayUI(){
-    renderTaskGrid();
-    taskOverlay.style.display = 'flex';
-    taskOverlay.setAttribute('aria-hidden','false');
-  }
+            // --- ROOM INTERACTIONS ---
+            computerHotspot.addEventListener('click', enterPCView);
+            mobileBackBtn.addEventListener('click', leavePCView);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && gameState.device === 'pc' && gameState.currentView === 'pc') {
+                    leavePCView();
+                }
+            });
 
-  // ---------- UI: small in-screen messages ----------
-  function showScreenText(txt){
-    pcScreenInner.innerHTML = `<div style="color:#9ff">${escapeHtml(txt)}</div>`;
-    setTimeout(()=> {
-      if (!activeTask) pcScreenInner.innerHTML = 'Click a task to start. Complete 10 total tasks.';
-    }, 2400);
-  }
+            function enterPCView() {
+                if (gameState.currentView === 'pc' || gameState.gameOver) return;
 
-  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+                gameState.currentView = 'pc';
+                screens.room.style.transform = "scale(3.5) translate(-18%, -13%)";
+                screens.room.style.opacity = 0.5;
+                screens.pc.classList.add('active'); // Fade in
+                
+                if (gameState.pcRebooting) return; // Already rebooting
 
-  // ---------- power off / cooldown behavior ----------
-  function powerOffAction(){
-    // toggles power; if turning off during task => abort (fail)
-    // but spec: turning off PC should return to main room and reduce panic slowly; when reopening, 30s loading
-    if (pcCooldown > 0){
-      // if off already in cooldown, turning on not allowed until cooldown 30s finished
-      showScreenText('PC still in cooldown.');
-      return;
-    }
-    // start cooldown sequence
-    showScreenText('You turned off the PC. Returning to room...');
-    // if activeTask -> abort
-    if (activeTask) {
-      finishTask(false, 'Power off by player.');
-    }
-    // close pc view if open
-    closeZoomToPC();
-    // slow panic decay while off (but small)
-    let offDecay = setInterval(()=> {
-      panic = Math.max(0, panic - 0.6);
-      setPanicUI();
-    }, 1200);
-    // set cooldown 30s during which PC cannot be reopened
-    pcCooldown = 30;
-    updateCooldownFill();
-    if (pcCooldownInterval) clearInterval(pcCooldownInterval);
-    pcCooldownInterval = setInterval(()=> {
-      pcCooldown--;
-      updateCooldownFill();
-      if (pcCooldown <= 0){
-        clearInterval(pcCooldownInterval);
-        pcCooldownInterval = null;
-        pcCooldown = 0;
-        updateCooldownFill();
-        clearInterval(offDecay);
-        showScreenText('PC is available again.');
-      }
-    }, 1000);
-  }
+                if (!gameState.pcOn) {
+                    // Start reboot sequence
+                    pcDesktop.style.display = 'none';
+                    pcRebooting.style.display = 'block';
+                    runRebootSequence();
+                } else {
+                    // Turn on PC
+                    pcDesktop.style.display = 'flex';
+                    pcRebooting.style.display = 'none';
+                    if (!gameState.currentTask) {
+                        taskManager.loadNextTask();
+                    }
+                    startPCClock();
+                }
+            }
 
-  function updateCooldownFill(){
-    if (pcCooldown <= 0) {
-      cooldownFill.style.width = '0%';
-      pcPowerState.textContent = 'ON';
-      pcPowerState.style.background = 'transparent';
-      return;
-    }
-    const pct = Math.max(0, Math.min(100, (30 - pcCooldown) / 30 * 100));
-    cooldownFill.style.width = pct + '%';
-    pcPowerState.textContent = 'COOLDOWN';
-    pcPowerState.style.background = 'transparent';
-  }
+            function leavePCView() {
+                if (gameState.currentView !== 'pc' || gameState.gameOver) return;
+                
+                gameState.currentView = 'room';
+                screens.room.style.transform = "scale(1) translate(0, 0)";
+                screens.room.style.opacity = 1;
+                screens.pc.classList.remove('active'); // Fade out
+                stopPCClock();
+            }
 
-  // ---------- pill behavior ----------
-  function takePill(){
-    if (pills <= 0) { showScreenText('No pills left.'); playAmbientTick(); return; }
-    pills--;
-    setPillsUI();
-    panic = Math.max(0, panic - 20 - Math.random()*8);
-    setPanicUI();
-    showScreenText('You took a pill. Breathing calms.');
-    playAmbientTick();
-    // reset breath schedule
-    if (breathEventTimeout) { clearTimeout(breathEventTimeout); breathEventTimeout = null; }
-    scheduleBreathEvent();
-  }
+            pcPowerOff.addEventListener('click', turnOffPC);
 
-  // ---------- jumpscare logic ----------
-  function triggerJumpscare(){
-    if (jumpscareTriggered) return;
-    jumpscareTriggered = true;
-    // show jumpscare overlay
-    jumpscare.style.display = 'flex';
-    jumpscare.setAttribute('aria-hidden','false');
-    // attempt to play MOV video
-    try {
-      jumpscareVideo.src = JUMPSCARE_VIDEO;
-      jumpscareVideo.currentTime = 0;
-      jumpscareVideo.play().catch(()=> {
-        // if video fails to play (format), fallback to text + flash
-        fallbackJumpscare();
-      });
-    } catch(e){
-      fallbackJumpscare();
-    }
-    // loud sound
-    jumpscareSound();
-    // after short delay, end
-    setTimeout(()=> {
-      gameOver(false, 'Caught by the child.');
-    }, 2400);
-  }
+            function turnOffPC() {
+                if (!gameState.pcOn) return;
+                gameState.pcOn = false;
+                gameState.currentTask = null; // Clear current task
+                showTip("PC shutting down. Things feel... quieter.");
+                leavePCView();
+            }
 
-  function fallbackJumpscare(){
-    jumpscare.innerHTML = '<div style="color:#ffb3b3;font-size:28px;font-family:var(--mono);font-weight:800">REMEMBER.</div>';
-    jumpscare.style.background = '#120002';
-  }
+            function runRebootSequence() {
+                if (gameState.pcRebooting) return;
+                gameState.pcRebooting = true;
+                
+                const rebootDuration = 30000; // 30 seconds
+                rebootBarFill.style.transition = `width ${rebootDuration}ms linear`;
+                rebootBarFill.style.width = '100%';
 
-  // ---------- game over ----------
-  function gameOver(win, reason){
-    // stop everything
-    clearInterval(panicAutoInterval); panicAutoInterval = null;
-    clearInterval(gameTimerInterval); gameTimerInterval = null;
-    clearInterval(pcCooldownInterval); pcCooldownInterval = null;
-    if (!win) {
-      // if not already jumpscare, trigger
-      if (!jumpscareTriggered) triggerJumpscare();
-      setTimeout(()=> {
-        alert('You failed — ' + (reason || 'Captured.'));
-        location.reload();
-      }, 2600);
-    } else {
-      alert('You survived. Memory returns... ' + (reason || 'Victory.'));
-      location.reload();
-    }
-  }
+                setTimeout(() => {
+                    gameState.pcOn = true;
+                    gameState.pcRebooting = false;
+                    rebootBarFill.style.transition = 'none';
+                    rebootBarFill.style.width = '0%';
 
-  // ---------- keyboard / input ----------
-  document.addEventListener('keydown', (e)=>{
-    if (!deviceMode) return;
-    if (e.key === 'Enter'){
-      if (!pcOpen) openZoomToPC();
-      else {
-        // if overlay, nothing
-      }
-    }
-    if (e.key.toLowerCase() === 'p') {
-      takePill();
-    }
-    if (e.key === 'Escape'){
-      // only PC mode supports escape to exit PC
-      if (deviceMode === 'pc' && pcOpen){
-        closeZoomToPC();
-      } else if (deviceMode === 'pc' && taskOverlay.style.display === 'flex'){
-        if (activeTask){
-          if (confirm('Abort task? This counts as failure.')) finishTask(false, 'Aborted by player.');
-        } else closeTaskOverlay();
-      }
-    }
-  });
+                    // If still on PC screen, show desktop
+                    if (gameState.currentView === 'pc') {
+                        pcDesktop.style.display = 'flex';
+                        pcRebooting.style.display = 'none';
+                        taskManager.loadNextTask();
+                        startPCClock();
+                    }
+                }, rebootDuration);
+            }
 
-  // ---------- event binding ----------
-  choosePC.addEventListener('click', async ()=> {
-    deviceMode = 'pc';
-    startModal.style.display = 'none';
-    await initAfterChoose();
-  });
-  chooseMobile.addEventListener('click', async ()=> {
-    deviceMode = 'mobile';
-    startModal.style.display = 'none';
-    await initAfterChoose();
-  });
+            function startPCClock() {
+                let time = 0;
+                if (gameState.timers.pcClock) clearInterval(gameState.timers.pcClock);
+                gameState.timers.pcClock = setInterval(() => {
+                    time++;
+                    const minutes = String(Math.floor(time / 60)).padStart(2, '0');
+                    const seconds = String(time % 60).padStart(2, '0');
+                    pcTime.textContent = `${minutes}:${seconds}`;
+                }, 1000);
+            }
 
-  pcHotspot.addEventListener('click', ()=> {
-    // click hotspot -> open zoom
-    openZoomToPC();
-  });
+            function stopPCClock() {
+                if (gameState.timers.pcClock) clearInterval(gameState.timers.pcClock);
+                gameState.timers.pcClock = null;
+            }
 
-  btnOpenPC.addEventListener('click', ()=> openZoomToPC());
-  btnPower.addEventListener('click', ()=> {
-    powerOffAction();
-  });
-  btnTakePill.addEventListener('click', ()=> takePill());
 
-  // pill visuals clickable
-  pillSlots.forEach(slot => {
-    slot.addEventListener('click', ()=> {
-      if (slot.classList.contains('empty')) { showScreenText('No pill here.'); return; }
-      takePill();
-    });
-  });
+            // --- TASK MANAGEMENT ---
+            const taskManager = {
+                currentTaskCleanup: null,
+                
+                tasks: [
+                    { name: "Type Code", init: task_typeCode },
+                    { name: "Reaction Test", init: task_clickReaction },
+                    { name:css: "Memory Match", init: task_memoryMatch },
+                    { name: "Sequence", init: task_sequencePress }
+                ],
+                
+                loadNextTask: function() {
+                    if (gameState.tasksCompleted >= gameState.tasksTotal) {
+                        winGame();
+                        return;
+                    }
 
-  pcClose.addEventListener('click', ()=> {
-    if (deviceMode === 'mobile') { showScreenText('Use the back button on mobile.'); return; }
-    closeZoomToPC();
-  });
+                    if (this.currentTaskCleanup) {
+                        this.currentTaskCleanup();
+                        this.currentTaskCleanup = null;
+                    }
 
-  pcPower.addEventListener('click', ()=> {
-    powerOffAction();
-  });
+                    taskContainer.innerHTML = '<h3>Loading new task...</h3>';
+                    gameState.currentTask = true; // Mark as having a task
 
-  openTasksBtn.addEventListener('click', ()=> openTaskOverlayUI());
-  abortBtn.addEventListener('click', ()=> {
-    if (activeTask) {
-      if (confirm('Abort task? This counts as failure.')) finishTask(false, 'Aborted by player.');
-    } else closeTaskOverlay();
-  });
+                    setTimeout(() => {
+                        const taskIndex = gameState.tasksCompleted % this.tasks.length;
+                        this.tasks[taskIndex].init();
+                    }, 1000 + Math.random() * 1500);
+                },
 
-  taskOverlay.addEventListener('click', (e)=> {
-    if (e.target === taskOverlay && !activeTask) closeTaskOverlay();
-  });
+                completeTask: function() {
+                    if (this.currentTaskCleanup) {
+                        this.currentTaskCleanup();
+                        this.currentTaskCleanup = null;
+                    }
+                    
+                    gameState.tasksCompleted++;
+                    gameState.currentTask = null;
+                    taskCount.textContent = gameState.tasksTotal - gameState.tasksCompleted;
+                    taskContainer.innerHTML = `<h2 style="color: #0f0;">TASK COMPLETE.</h2><p>Calibrating next module...</p>`;
+                    
+                    // Give a small panic reward
+                    gameState.panic = Math.max(0, gameState.panic - 5);
+                    
+                    setTimeout(this.loadNextTask.bind(this), 2000);
+                }
+            };
 
-  // close jumpscare on click (for safety)
-  jumpscare.addEventListener('click', ()=> {
-    // stop video if playing
-    try { jumpscareVideo.pause(); } catch(e){}
-    jumpscare.style.display = 'none';
-  });
+            function task_typeCode() {
+                const code = Array(15).fill(0).map(() => "abcdefghijklmnopqrstuvwxyz0123456789".charAt(Math.floor(Math.random() * 36))).join('');
+                taskContainer.innerHTML = `
+                    <p class="task-description">SECURITY PROTOCOL: Type the following verification code exactly:</p>
+                    <h3 id="task-type-code">${code}</h3>
+                    <input type="text" id="task-type-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                `;
+                
+                const input = document.getElementById('task-type-input');
+                input.focus();
 
-  // ---------- initialization after device chosen ----------
-  async function initAfterChoose(){
-    // start audio after first user gesture
-    ensureAudio();
-    await loadBreath();
-    // small ambient scheduler
-    startPanicAuto();
-    startTips();
-    startGameTimer();
-    // schedule ambient ticks randomly
-    setInterval(()=> { if (Math.random() < 0.18) playAmbientTick(); }, 1200);
-    // initial UI
-    setPanicUI(); setPillsUI(); setProgressUI(); setActiveUI();
-    renderTaskGrid();
-    showScreenText('You wake up. The room is quiet. Click the PC or press Enter to open tasks.');
-    // small random panic rises to kick things off
-    setTimeout(()=> { panic = 6 + Math.random()*8; setPanicUI(); scheduleBreathEvent(); }, 1200);
-    // tip bubble fade
-    setTimeout(()=> { tipBubble.style.opacity = 0.85; }, 100);
-  }
+                const keyHandler = (e) => {
+                    if (e.target.value === code) {
+                        taskManager.completeTask();
+                    } else if (code.startsWith(e.target.value)) {
+                        input.style.borderColor = '#444';
+                    } else {
+                        input.style.borderColor = 'red';
+                    }
+                };
+                input.addEventListener('keyup', keyHandler);
+                
+                taskManager.currentTaskCleanup = () => {
+                    input.removeEventListener('keyup', keyHandler);
+                };
+            }
 
-})(); // IIFE end
-</script>
+            function task_clickReaction() {
+                taskContainer.innerHTML = `
+                    <p class="task-description">REFLEX CALIBRATION: Click the green square as fast as possible.</p>
+                    <div id="task-reaction-grid">
+                        ${Array(9).fill(0).map(() => `<div class="reaction-square"></div>`).join('')}
+                    </div>
+                `;
+
+                const squares = taskContainer.querySelectorAll('.reaction-square');
+                const timeoutId = setTimeout(() => {
+                    const targetIndex = Math.floor(Math.random() * squares.length);
+                    squares[targetIndex].classList.add('target');
+                    squares[targetIndex].addEventListener('click', taskManager.completeTask.bind(taskManager), { once: true });
+                }, 1500 + Math.random() * 3000);
+
+                taskManager.currentTaskCleanup = () => {
+                    clearTimeout(timeoutId);
+                    squares.forEach(sq => sq.replaceWith(sq.cloneNode(true))); // Remove listeners
+                };
+            }
+
+            function task_memoryMatch() {
+                taskContainer.innerHTML = `
+                    <p class="task-description">COGNITIVE TEST: Match all pairs.</p>
+                    <div id="task-memory-grid"></div>
+                `;
+                
+                const grid = document.getElementById('task-memory-grid');
+                const symbols = ['★', '★', '❖', '❖', '♦', '♦', 'Ω', 'Ω'];
+                symbols.sort(() => 0.5 - Math.random()); // Shuffle
+
+                let flippedCards = [];
+                let matchedPairs = 0;
+                let handlingClick = false;
+
+                symbols.forEach((symbol, index) => {
+                    const card = document.createElement('div');
+                    card.classList.add('memory-card');
+                    card.dataset.symbol = symbol;
+                    card.dataset.index = index;
+                    card.innerHTML = `<span>${symbol}</span>`;
+                    grid.appendChild(card);
+                });
+
+                const clickHandler = (e) => {
+                    const clickedCard = e.target.closest('.memory-card');
+                    if (!clickedCard || handlingClick || clickedCard.classList.contains('flipped') || clickedCard.classList.contains('matched')) {
+                        return;
+                    }
+
+                    handlingClick = true;
+                    clickedCard.classList.add('flipped');
+                    flippedCards.push(clickedCard);
+
+                    if (flippedCards.length === 2) {
+                        // Check for match
+                        if (flippedCards[0].dataset.symbol === flippedCards[1].dataset.symbol) {
+                            flippedCards.forEach(card => card.classList.add('matched'));
+                            matchedPairs++;
+                            flippedCards = [];
+                            handlingClick = false;
+                            
+                            if (matchedPairs === symbols.length / 2) {
+                                setTimeout(taskManager.completeTask.bind(taskManager), 500);
+                            }
+                        } else {
+                            // No match
+                            setTimeout(() => {
+                                flippedCards.forEach(card => card.classList.remove('flipped'));
+                                flippedCards = [];
+                                handlingClick = false;
+                            }, 1000);
+                        }
+                    } else {
+                        handlingClick = false;
+                    }
+                };
+
+                grid.addEventListener('click', clickHandler);
+                taskManager.currentTaskCleanup = () => {
+                    grid.removeEventListener('click', clickHandler);
+                };
+            }
+
+            function task_sequencePress() {
+                taskContainer.innerHTML = `
+                    <p class="task-description">PATTERN RECOGNITION: Press the buttons in the correct sequence.</p>
+                    <div id="task-sequence-display" style="font-size: 2rem; margin: 20px 0; letter-spacing: 10px; color: #ff0;"></div>
+                    <div id="task-sequence-buttons">
+                        <button data-seq="1">1</button>
+                        <button data-seq="2">2</button>
+                        <button data-seq="3">3</button>
+                        <button data-seq="4">4</button>
+                    </div>
+                    <p id="task-sequence-input" style="font-size: 1.5rem; margin-top: 20px;"></p>
+                `;
+
+                const display = document.getElementById('task-sequence-display');
+                const buttons = document.getElementById('task-sequence-buttons');
+                const inputDisplay = document.getElementById('task-sequence-input');
+
+                const sequence = Array(5).fill(0).map(() => Math.floor(Math.random() * 4) + 1);
+                let playerInput = [];
+                
+                display.textContent = sequence.join('');
+
+                const clickHandler = (e) => {
+                    if (!e.target.matches('button[data-seq]')) return;
+                    
+                    const val = e.target.dataset.seq;
+                    playerInput.push(val);
+                    inputDisplay.textContent = playerInput.join('');
+
+                    // Check input
+                    if (sequence[playerInput.length - 1] != val) {
+                        // Wrong, reset
+                        inputDisplay.style.color = 'red';
+                        setTimeout(() => {
+                            playerInput = [];
+                            inputDisplay.textContent = '';
+                            inputDisplay.style.color = '#ccc';
+                        }, 500);
+                    } else if (playerInput.length === sequence.length) {
+                        // Correct
+                        inputDisplay.style.color = 'green';
+                        setTimeout(taskManager.completeTask.bind(taskManager), 500);
+                    }
+                };
+                
+                buttons.addEventListener('click', clickHandler);
+                taskManager.currentTaskCleanup = () => {
+                    buttons.removeEventListener('click', clickHandler);
+                };
+            }
+
+
+            // --- JUMPSCARE HANDLER ---
+            function triggerJumpscare() {
+                if (gameState.gameOver) return;
+                console.log("GAME OVER");
+                gameState.gameOver = true;
+                stopGameLoop();
+
+                // Reset all visuals
+                gameContainer.className = '';
+                panicOverlay.style.opacity = 0;
+                Object.values(screens).forEach(s => s.classList.remove('active'));
+
+                // Stop all audio
+                audioBreathing.pause();
+                if (gameState.ambientHum) gameState.ambientHum.stop();
+                
+                // Play jumpscare
+                jumpscareVideo.style.display = 'block';
+                jumpscareVideo.currentTime = 0;
+                jumpscareVideo.play().catch(e => {
+                    console.error("Jumpscare video failed to play", e);
+                    // Fallback if video fails
+                    showGameOver();
+                });
+            }
+
+            jumpscareVideo.addEventListener('ended', showGameOver);
+            jumpscareVideo.addEventListener('error', showGameOver); // Fallback
+
+            function showGameOver() {
+                jumpscareVideo.style.display = 'none';
+                showScreen('gameOver');
+            }
+
+            // --- WIN / LOSE CONDITIONS ---
+            function winGame() {
+                if (gameState.gameOver) return;
+                console.log("YOU WIN");
+                gameState.gameOver = true;
+                stopGameLoop();
+                
+                audioBreathing.pause();
+                if (gameState.ambientHum) gameState.ambientHum.stop();
+
+                leavePCView();
+                setTimeout(() => {
+                    showScreen('win');
+                }, 1500); // Wait for zoom out
+            }
+
+            // --- RESTART ---
+            document.getElementById('restart-btn').addEventListener('click', () => location.reload());
+            document.getElementById('restart-btn-win').addEventListener('click', () => location.reload());
+
+        });
+    </script>
 </body>
 </html>
+
