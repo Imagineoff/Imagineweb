@@ -52,7 +52,7 @@
             transition: opacity 1s ease-in-out, transform 1.2s ease-in-out;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            /* justify-content: center; */ /* Removed to push PC to top */
             align-items: center;
         }
 
@@ -97,6 +97,7 @@
         #intro-screen {
             background: #000;
             z-index: 100;
+            justify-content: center; /* Re-add center for intro only */
         }
 
         #studio-logo {
@@ -155,6 +156,7 @@
             background-position: center;
             z-index: 5;
             transform: scale(1);
+            justify-content: center; /* Re-add center for room only */
         }
 
         #computer-hotspot {
@@ -177,6 +179,7 @@
             background: var(--pc-bg);
             z-index: 20;
             transform: scale(1.1); /* Start slightly zoomed for transition */
+            padding-top: 2vh; /* Push PC desktop to top */
         }
 
         #pc-screen.active {
@@ -184,10 +187,10 @@
         }
 
         #pc-desktop {
-            width: 95%;
-            height: 95%;
-            max-width: 1200px;
-            max-height: 800px;
+            width: 98vw; /* Pushed to edge */
+            height: 96vh; /* Pushed to edge */
+            /* max-width: 1200px; */ /* Removed */
+            /* max-height: 800px; */ /* Removed */
             background: var(--pc-monitor-bg);
             border: 10px solid #111;
             border-radius: 5px;
@@ -444,6 +447,7 @@
         #game-over-screen, #win-screen {
             background: #000;
             z-index: 9998;
+            justify-content: center; /* Re-add center for end screens */
         }
         #game-over-screen h1, #win-screen h1 {
             text-align: center;
@@ -503,10 +507,11 @@
         }
 
         @keyframes shake {
+            /* More aggressive shake */
             0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(2px, -1px); }
-            50% { transform: translate(-1px, 2px); }
-            75% { transform: translate(1px, -2px); }
+            25% { transform: translate(3px, -2px); }
+            50% { transform: translate(-2px, 3px); }
+            75% { transform: translate(2px, -3px); }
         }
 
         /* --- 6. JUMPSCARE --- */
@@ -548,6 +553,7 @@
                 max-height: 100%;
                 border: none;
                 border-radius: 0;
+                padding: 10px;
             }
             #pc-controls {
                 flex-direction: column;
@@ -593,7 +599,7 @@
                 </div>
                 <div id="pc-main-area">
                     <div id="pc-sidebar">
-                        <div classid="pc-icon-tasks" class="pc-icon active" data-view="tasks">Tasks</div>
+                        <div class="pc-icon active" data-view="tasks">Tasks</div>
                         <div class="pc-icon" data-view="logs">Logs</div>
                     </div>
                     <div id="task-container">
@@ -748,8 +754,8 @@
                     PanicManager.start();
                     UIManager.start();
                     
-                    // Random ambient events
-                    this.timers.ambient = setTimeout(this.triggerRandomEvent, 20000 + Math.random() * 20000);
+                    // Random ambient events (more frequent)
+                    this.timers.ambient = setTimeout(this.triggerRandomEvent, 15000 + Math.random() * 20000); // 15-35s
                 },
 
                 stopGameLoop() {
@@ -778,8 +784,8 @@
                         AudioManager.playStatic();
                     }
 
-                    // Reschedule
-                    Game.timers.ambient = setTimeout(Game.triggerRandomEvent, 30000 + Math.random() * 30000); // 30-60s
+                    // Reschedule (more frequent)
+                    Game.timers.ambient = setTimeout(Game.triggerRandomEvent, 20000 + Math.random() * 20000); // 20-40s
                 },
 
                 win() {
@@ -897,7 +903,7 @@
 
                 startBreathing() {
                     this.breathing.currentTime = 0;
-                    this.breathing.volume = 0.7;
+                    this.breathing.volume = 0.8; // Start louder
                     this.breathing.play().catch(e => console.warn("Breathing audio failed"));
                 },
                 
@@ -932,10 +938,10 @@
                 update() {
                     if (Game.gameOver || Game.pcRebooting) return;
 
-                    let panicIncrease = 0.15;
-                    if (Game.pills <= 2) panicIncrease = 0.25;
-                    if (Game.pills === 0) panicIncrease = 0.5;
-                    if (Game.currentView === 'pc' && Game.pcOn) panicIncrease *= 2.0; // Panic faster on PC
+                    let panicIncrease = 0.2; // More aggressive
+                    if (Game.pills <= 2) panicIncrease = 0.35;
+                    if (Game.pills === 0) panicIncrease = 0.6; // More aggressive
+                    if (Game.currentView === 'pc' && Game.pcOn) panicIncrease *= 2.5; // More aggressive
 
                     if (!Game.pcOn && Game.currentView === 'room') {
                         this.panic = Math.max(0, this.panic - 0.2);
@@ -954,14 +960,14 @@
                         DOM.panicOverlay.style.opacity = 0;
                     }
 
-                    // Level 2: High Panic (Breathing, Blur, Shake)
-                    if (this.panic >= 80 && !this.highPanicActive) {
+                    // Level 2: High Panic (Breathing, Blur, Shake) - Starts earlier
+                    if (this.panic >= 75 && !this.highPanicActive) {
                         this.highPanicActive = true;
                         AudioManager.startBreathing();
                         DOM.gameContainer.classList.add('high-panic-blur', 'high-panic-shake');
                         DOM.panicOverlay.style.background = 'radial-gradient(circle, transparent 60%, rgba(255,0,0,0.3) 100%)';
                         UIManager.showTip("The breathing is getting closer...");
-                    } else if (this.panic < 80 && this.highPanicActive) {
+                    } else if (this.panic < 75 && this.highPanicActive) {
                         this.highPanicActive = false;
                         this.extremePanicActive = false; // Also reset extreme
                         AudioManager.stopBreathing();
@@ -969,19 +975,20 @@
                         DOM.panicOverlay.style.background = 'radial-gradient(circle, transparent 70%, rgba(0,0,0,0) 80%, rgba(255,0,0,0.1) 95%)';
                     }
 
-                    // Level 3: Extreme Panic
-                    if (this.panic >= 90 && !this.extremePanicActive) {
+                    // Level 3: Extreme Panic - Starts earlier
+                    if (this.panic >= 85 && !this.extremePanicActive) {
                         this.extremePanicActive = true;
                         DOM.gameContainer.classList.add('extreme-panic-filter');
-                    } else if (this.panic < 90 && this.extremePanicActive) {
+                    } else if (this.panic < 85 && this.extremePanicActive) {
                         this.extremePanicActive = false;
                         DOM.gameContainer.classList.remove('extreme-panic-filter');
                     }
                     
                     // Adjust effects based on panic
                     if(this.highPanicActive) {
-                        DOM.panicOverlay.style.opacity = 0.4 + (this.panic - 80) / 20 * 0.6;
-                        AudioManager.setBreathingVolume(0.7 + (this.panic - 80) / 20 * 0.3);
+                        DOM.panicOverlay.style.opacity = 0.4 + (this.panic - 75) / 25 * 0.6;
+                        // Volume ramp from 0.8 to 1.0
+                        AudioManager.setBreathingVolume(0.8 + (this.panic - 75) / 25 * 0.2);
                     }
 
                     if (this.panic >= 100) {
@@ -1125,6 +1132,7 @@
                     if (!Game.pcOn) return;
                     Game.pcOn = false;
                     TaskManager.clearTask();
+                    TaskManager.currentTask = null; // <-- BUG FIX: Clear current task
                     UIManager.showTip("PC shutting down. Things feel... quieter.");
                     this.leavePCView();
                 },
@@ -1133,7 +1141,7 @@
                     if (Game.pcRebooting) return;
                     Game.pcRebooting = true;
                     
-                    const rebootDuration = 30000; // 30 seconds
+                    const rebootDuration = 15000; // 15 seconds (was 30)
                     DOM.rebootBarFill.style.transition = `width ${rebootDuration}ms linear`;
                     DOM.rebootBarFill.style.width = '100%';
 
@@ -1185,8 +1193,14 @@
                     if (Game.currentPCView !== 'tasks') return;
                     
                     if (this.currentTask) {
-                        // Task in progress, render it
-                        this.currentTask.init();
+                        // Task in progress, re-render it
+                        const initFunc = this.taskImplementations[this.currentTask.init];
+                        if(initFunc) {
+                            initFunc.call(this.taskImplementations);
+                        } else {
+                            // Task is stale or bad, load next
+                            this.loadNextTask();
+                        }
                     } else {
                         // Load next task
                         this.loadNextTask();
