@@ -161,13 +161,14 @@
 
         #computer-hotspot {
             position: absolute;
-            /* Visually targeting the PC on the image */
-            top: 55%;
-            left: 58%;
-            width: 28%;
-            height: 30%;
+            /* Visually targeting the PC monitor in the upper-right */
+            top: 25%;
+            left: 55%;
+            width: 30%;
+            height: 35%;
             cursor: pointer;
             transition: background-color 0.3s;
+            /* border: 1px dashed red; */ /* Uncomment to debug hotspot */
         }
 
         #computer-hotspot:hover {
@@ -530,7 +531,8 @@
         /* --- RESPONSIVENESS --- */
         @media (max-width: 768px) {
             #computer-hotspot {
-                top: 50%;
+                /* Adjust for mobile view of image */
+                top: 28%;
                 left: 50%;
                 width: 40%;
                 height: 35%;
@@ -1099,7 +1101,8 @@
                     if (Game.currentView === 'pc' || Game.gameOver) return;
 
                     Game.currentView = 'pc';
-                    DOM.screens.room.style.transform = "scale(3.5) translate(-18%, -13%)";
+                    // Updated transform to aim at the new, higher hotspot
+                    DOM.screens.room.style.transform = "scale(3.5) translate(-15%, -25%)"; 
                     DOM.screens.room.style.opacity = 0.5;
                     DOM.screens.pc.classList.add('active');
                     
@@ -1241,6 +1244,7 @@
                 },
 
                 completeTask: function() {
+                    if (Game.gameOver) return; // Prevent calls after game end
                     this.clearTask();
                     
                     Game.tasksCompleted++;
@@ -1252,7 +1256,7 @@
                     PanicManager.panic = Math.max(0, PanicManager.panic - 5);
                     
                     setTimeout(() => {
-                        if(Game.currentPCView === 'tasks') {
+                        if(Game.currentPCView === 'tasks' && !Game.gameOver) {
                             this.loadNextTask();
                         }
                     }, 2000);
