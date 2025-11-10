@@ -167,7 +167,7 @@
 
         #computer-hotspot {
             position: absolute;
-            top: 25%;
+            top: 18%;
             left: 55%;
             width: 30%;
             height: 35%;
@@ -183,7 +183,7 @@
             background: var(--pc-bg);
             z-index: 20;
             transform: scale(1.1);
-            padding-top: 2vh;
+            padding-top: 1vh;
         }
 
         #pc-screen.active {
@@ -191,8 +191,9 @@
         }
 
         #pc-desktop {
-            width: 98vw;
-            height: 96vh;
+            width: 95vw;
+            height: 90vh;
+            max-width: 1400px;
             background: var(--pc-monitor-bg);
             border: 10px solid #111;
             border-radius: 5px;
@@ -391,39 +392,37 @@
         #pills-container {
             position: absolute;
             left: 40%;
-            top: 50%;
+            top: 40%;
             transform: translate(-50%, -50%);
             z-index: 25;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
         }
 
-        .pill {
-            width: 40px;
-            height: 40px;
+        #pills-container:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        #pills-container:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        #pill-image {
+            width: 50px;
+            height: 50px;
             background-image: url('https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/Pills.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            cursor: pointer;
-            transition: transform 0.2s ease, opacity 0.3s ease;
-            opacity: 1;
             touch-action: manipulation;
         }
 
-        .pill:hover {
-            transform: scale(1.1);
-        }
-
-        .pill.collected {
-            opacity: 0;
-            pointer-events: none;
-        }
-
         #pill-counter {
-            font-size: 1.5rem;
+            font-size: 2rem;
             color: #ffffff;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
@@ -537,20 +536,21 @@
 
         @media (max-width: 768px) {
             #computer-hotspot {
-                top: 28%;
+                top: 22%;
                 left: 50%;
                 width: 40%;
                 height: 35%;
             }
             #pills-container {
                 left: 35%;
+                top: 35%;
             }
-            .pill {
-                width: 35px;
-                height: 35px;
+            #pill-image {
+                width: 40px;
+                height: 40px;
             }
             #pill-counter {
-                font-size: 1.2rem;
+                font-size: 1.5rem;
             }
             #tips-hud {
                 bottom: 90px;
@@ -612,11 +612,7 @@
         <div id="room-screen" class="screen">
             <div id="computer-hotspot"></div>
             <div id="pills-container">
-                <div class="pill" data-pill-id="1"></div>
-                <div class="pill" data-pill-id="2"></div>
-                <div class="pill" data-pill-id="3"></div>
-                <div class="pill" data-pill-id="4"></div>
-                <div class="pill" data-pill-id="5"></div>
+                <div id="pill-image"></div>
                 <div id="pill-counter">5</div>
             </div>
         </div>
@@ -669,7 +665,7 @@
 
         <audio id="audio-breathing" src="https://files.catbox.moe/crj8v7.mp3" loop preload="auto"></audio>
         <audio id="audio-power-on" src="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/PowerON.mp3" loop preload="auto"></audio>
-        <audio id="audio-power-off" src="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/PowerOFF.mp3" preload="auto"></audio>
+        <audio id="audio-power-off" src="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/PowerOFF.mp3" loop preload="auto"></audio>
         <audio id="audio-knock" src="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/Knock.mp3" preload="auto"></audio>
 
     </div>
@@ -782,10 +778,6 @@
                     DOM.taskCount.textContent = this.tasksTotal;
                     DOM.pillCounter.textContent = this.pills;
                     
-                    document.querySelectorAll('.pill').forEach(pill => {
-                        pill.classList.remove('collected');
-                    });
-                    
                     PanicManager.panic = 30;
                     PanicManager.highPanicActive = false;
                     PanicManager.extremePanicActive = false;
@@ -833,8 +825,14 @@
                     DOM.audioPowerOn.currentTime = 0;
                 },
                 
-                playPowerOffSound() {
+                startPowerOffSound() {
+                    DOM.audioPowerOff.currentTime = 0;
                     DOM.audioPowerOff.play().catch(e => console.log('PowerOff audio failed:', e));
+                },
+                
+                stopPowerOffSound() {
+                    DOM.audioPowerOff.pause();
+                    DOM.audioPowerOff.currentTime = 0;
                 },
                 
                 updateRoomState() {
@@ -842,10 +840,12 @@
                         DOM.screens.room.classList.remove('pc-off-state');
                         DOM.screens.room.classList.add('pc-on-state');
                         this.startPowerOnSound();
+                        this.stopPowerOffSound();
                     } else {
                         DOM.screens.room.classList.remove('pc-on-state');
                         DOM.screens.room.classList.add('pc-off-state');
                         this.stopPowerOnSound();
+                        this.startPowerOffSound();
                     }
                 },
                 
@@ -1464,17 +1464,15 @@
                 Game.start();
             }
 
-            DOM.pillsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('pill') && !e.target.classList.contains('collected')) {
-                    e.target.classList.add('collected');
+            DOM.pillsContainer.addEventListener('click', () => {
+                if (Game.pills > 0 && !Game.gameOver) {
                     PanicManager.takePill();
                 }
             });
 
             DOM.pillsContainer.addEventListener('touchend', (e) => {
-                if (e.target.classList.contains('pill') && !e.target.classList.contains('collected')) {
-                    e.preventDefault();
-                    e.target.classList.add('collected');
+                e.preventDefault();
+                if (Game.pills > 0 && !Game.gameOver) {
                     PanicManager.takePill();
                 }
             });
