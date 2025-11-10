@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>he will never forget</title>
-      <link rel="icon" href="https://i.imgur.com/nfdTlfO.jpeg" />
+    <link rel="icon" href="https://i.imgur.com/nfdTlfO.jpeg" />
     <style>
-        /* --- GLOBAL & SETUP --- */
         :root {
             --bg-color: #000000;
             --text-color: #cccccc;
@@ -53,7 +52,6 @@
             transition: opacity 1s ease-in-out, transform 1.2s ease-in-out;
             display: flex;
             flex-direction: column;
-            /* justify-content: center; */ /* Removed to push PC to top */
             align-items: center;
         }
 
@@ -72,6 +70,7 @@
             padding: 10px 20px;
             cursor: pointer;
             transition: all 0.3s ease;
+            touch-action: manipulation;
         }
 
         button:hover {
@@ -94,17 +93,16 @@
             to { opacity: 1; }
         }
 
-        /* --- 1. INTRO SCREEN --- */
         #intro-screen {
             background: #000;
             z-index: 100;
-            justify-content: center; /* Re-add center for intro only */
+            justify-content: center;
         }
 
         #studio-logo {
             font-size: 2rem;
             color: #555;
-            opacity: 0; /* Start at 0 */
+            opacity: 0;
             animation: fadeInOut 5s forwards ease-in-out;
         }
         
@@ -113,7 +111,7 @@
             height: 5px;
             border: 1px solid #444;
             margin-top: 20px;
-            opacity: 0; /* Fade in with logo */
+            opacity: 0;
             animation: fadeIn 2s forwards 0.5s;
         }
         
@@ -121,7 +119,7 @@
             width: 0%;
             height: 100%;
             background-color: var(--text-color);
-            animation: fillLoading 4s forwards 1s ease-out; /* Fill over 4s, after 1s delay */
+            animation: fillLoading 4s forwards 1s ease-out;
         }
         
         @keyframes fadeInOut {
@@ -138,7 +136,7 @@
 
         #device-select {
             margin-top: 30px;
-            opacity: 0; /* JS will fade this in */
+            opacity: 0;
         }
 
         #device-select h1 {
@@ -150,38 +148,42 @@
             margin: 0 10px;
         }
 
-        /* --- 2. MAIN ROOM --- */
         #room-screen {
             background-image: url('https://i.imgur.com/O9vg7SA.jpeg');
             background-size: cover;
             background-position: center;
             z-index: 5;
             transform: scale(1);
-            justify-content: center; /* Re-add center for room only */
+            justify-content: center;
+        }
+
+        #room-screen.pc-off-state {
+            background-image: url('https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/PowerOFF.JPG');
+        }
+
+        #room-screen.pc-on-state {
+            background-image: url('https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/PowerON.JPG');
         }
 
         #computer-hotspot {
             position: absolute;
-            /* Visually targeting the PC monitor in the upper-right */
             top: 25%;
             left: 55%;
             width: 30%;
             height: 35%;
             cursor: pointer;
             transition: background-color 0.3s;
-            /* border: 1px dashed red; */ /* Uncomment to debug hotspot */
         }
 
         #computer-hotspot:hover {
             background-color: rgba(255, 0, 0, 0.1);
         }
 
-        /* --- 3. PC VIEW --- */
         #pc-screen {
             background: var(--pc-bg);
             z-index: 20;
-            transform: scale(1.1); /* Start slightly zoomed for transition */
-            padding-top: 2vh; /* Push PC desktop to top */
+            transform: scale(1.1);
+            padding-top: 2vh;
         }
 
         #pc-screen.active {
@@ -189,10 +191,8 @@
         }
 
         #pc-desktop {
-            width: 98vw; /* Pushed to edge */
-            height: 96vh; /* Pushed to edge */
-            /* max-width: 1200px; */ /* Removed */
-            /* max-height: 800px; */ /* Removed */
+            width: 98vw;
+            height: 96vh;
             background: var(--pc-monitor-bg);
             border: 10px solid #111;
             border-radius: 5px;
@@ -223,6 +223,7 @@
             cursor: pointer;
             margin-bottom: 15px;
             font-size: 1rem;
+            touch-action: manipulation;
         }
         .pc-icon:before {
             content: '[ ] ';
@@ -297,7 +298,6 @@
             transition: width 0.1s linear;
         }
 
-        /* --- PC TASKS STYLING --- */
         .task-description {
             color: var(--pc-text);
             margin-bottom: 20px;
@@ -339,6 +339,7 @@
             border: 2px solid #555;
             cursor: pointer;
             transition: background-color 0.1s;
+            touch-action: manipulation;
         }
         .reaction-square.target {
             background: var(--pc-text);
@@ -387,36 +388,45 @@
             box-shadow: 0 0 10px #ff0;
         }
 
-        /* --- HUD & UI --- */
-        #pills-hud {
+        #pills-container {
             position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 40%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 25;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 10px 15px;
-            border-radius: 5px;
+            gap: 10px;
+        }
+
+        .pill {
+            width: 40px;
+            height: 40px;
+            background-image: url('https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/Pills.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
             cursor: pointer;
-            z-index: 30;
-            transition: transform 0.2s ease;
-        }
-        #pills-hud:active {
-            transform: translateX(-50%) scale(0.95);
+            transition: transform 0.2s ease, opacity 0.3s ease;
+            opacity: 1;
+            touch-action: manipulation;
         }
 
-        #pill-icon {
-            width: 30px;
-            height: 30px;
-            filter: brightness(0.8);
+        .pill:hover {
+            transform: scale(1.1);
         }
 
-        #pill-count {
-            font-size: 1.8rem;
+        .pill.collected {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #pill-counter {
+            font-size: 1.5rem;
             color: #ffffff;
-            margin-left: 15px;
             font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
 
         #mobile-back-btn {
@@ -429,6 +439,7 @@
             border-radius: 5px;
             z-index: 30;
             cursor: pointer;
+            touch-action: manipulation;
         }
 
         #tips-hud {
@@ -445,11 +456,10 @@
             z-index: 30;
         }
 
-        /* --- 4. GAME OVER / WIN SCREENS --- */
         #game-over-screen, #win-screen {
             background: #000;
             z-index: 9998;
-            justify-content: center; /* Re-add center for end screens */
+            justify-content: center;
         }
         #game-over-screen h1, #win-screen h1 {
             text-align: center;
@@ -459,7 +469,6 @@
             margin-top: 30px;
         }
 
-        /* --- 5. EFFECTS & OVERLAYS --- */
         #flicker-overlay {
             position: absolute;
             top: 0;
@@ -486,7 +495,6 @@
             transition: opacity 1.5s ease, background 1.5s ease;
         }
 
-        /* High Panic Effects */
         .high-panic-blur {
             filter: blur(1px);
         }
@@ -509,14 +517,12 @@
         }
 
         @keyframes shake {
-            /* More aggressive shake */
             0%, 100% { transform: translate(0, 0); }
             25% { transform: translate(3px, -2px); }
             50% { transform: translate(-2px, 3px); }
             75% { transform: translate(2px, -3px); }
         }
 
-        /* --- 6. JUMPSCARE --- */
         #jumpscare-video {
             position: fixed;
             top: 0;
@@ -529,17 +535,22 @@
             background: #000;
         }
 
-        /* --- RESPONSIVENESS --- */
         @media (max-width: 768px) {
             #computer-hotspot {
-                /* Adjust for mobile view of image */
                 top: 28%;
                 left: 50%;
                 width: 40%;
                 height: 35%;
             }
-            #pills-hud {
-                bottom: 20px;
+            #pills-container {
+                left: 35%;
+            }
+            .pill {
+                width: 35px;
+                height: 35px;
+            }
+            #pill-counter {
+                font-size: 1.2rem;
             }
             #tips-hud {
                 bottom: 90px;
@@ -573,6 +584,14 @@
                 height: auto;
             }
         }
+
+        @media (min-width: 769px) {
+            .pc-only { display: block; }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-only { display: block; }
+        }
     </style>
 </head>
 <body>
@@ -592,7 +611,15 @@
 
         <div id="room-screen" class="screen">
             <div id="computer-hotspot"></div>
+            <div id="pills-container">
+                <div class="pill" data-pill-id="1"></div>
+                <div class="pill" data-pill-id="2"></div>
+                <div class="pill" data-pill-id="3"></div>
+                <div class="pill" data-pill-id="4"></div>
+                <div class="pill" data-pill-id="5"></div>
+                <div id="pill-counter">5</div>
             </div>
+        </div>
 
         <div id="pc-screen" class="screen">
             <div id="pc-desktop" style="display: none;">
@@ -606,7 +633,7 @@
                         <div class="pc-icon" data-view="logs">Logs</div>
                     </div>
                     <div id="task-container">
-                        </div>
+                    </div>
                 </div>
                 <div id="pc-controls">
                     <span class="pc-only">Press ESC to leave PC</span>
@@ -633,12 +660,7 @@
             <button id="restart-btn-win">Restart</button>
         </div>
 
-        <div id="pills-hud" style="display: none;">
-            <img id="pill-icon" src="https://i.imgur.com/vz9eh1m.jpeg" alt="Pills">
-            <span id="pill-count">5</span>
-        </div>
-        
-        <div id="mobile-back-btn" class="mobile-only" style="display: none; z-index: 30;">Back</div>
+        <div id="mobile-back-btn" class="mobile-only" style="display: none;">Back</div>
         <div id="tips-hud"></div>
         <div id="flicker-overlay"></div>
         <div id="panic-overlay"></div>
@@ -646,13 +668,15 @@
         <video id="jumpscare-video" src="https://files.catbox.moe/cskqo9.mov" playsinline preload="auto"></video>
 
         <audio id="audio-breathing" src="https://files.catbox.moe/crj8v7.mp3" loop preload="auto"></audio>
+        <audio id="audio-power-on" src="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/PowerON.mp3" loop preload="auto"></audio>
+        <audio id="audio-power-off" src="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/PowerOFF.mp3" preload="auto"></audio>
+        <audio id="audio-knock" src="https://raw.githubusercontent.com/Imagineoff/Imagineweb/main/Knock.mp3" preload="auto"></audio>
 
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- DOM ELEMENTS ---
             const $ = document.getElementById.bind(document);
             
             const DOM = {
@@ -670,8 +694,8 @@
                 btnPC: $('btn-pc'),
                 btnMobile: $('btn-mobile'),
                 computerHotspot: $('computer-hotspot'),
-                pillsHUD: $('pills-hud'),
-                pillCount: $('pill-count'),
+                pillsContainer: $('pills-container'),
+                pillCounter: $('pill-counter'),
                 mobileBackBtn: $('mobile-back-btn'),
                 tipsHUD: $('tips-hud'),
                 pcDesktop: $('pc-desktop'),
@@ -684,10 +708,12 @@
                 pcSidebar: $('pc-sidebar'),
                 panicOverlay: $('panic-overlay'),
                 jumpscareVideo: $('jumpscare-video'),
-                audioBreathing: $('audio-breathing')
+                audioBreathing: $('audio-breathing'),
+                audioPowerOn: $('audio-power-on'),
+                audioPowerOff: $('audio-power-off'),
+                audioKnock: $('audio-knock')
             };
 
-            // --- GAME STATE ---
             const Game = {
                 device: 'pc',
                 currentView: 'intro',
@@ -706,227 +732,159 @@
                     "You can't stay here forever.",
                     "You must complete the tasks.",
                     "Turning off the PC helps... but wastes time.",
-                    "What did you do?",
-                    "She won't let you forget.",
-                    "Where am I?",
-                    "Why is she here?",
-                    "It was an accident...",
-                    "I... I didn't mean to."
+                    "She's still watching...",
+                    "The room feels colder."
                 ],
-
-                init() {
-                    // Fix startup bug: Wait for animations, then show device select
-                    setTimeout(() => {
-                        DOM.studioLogo.style.display = 'none';
-                        DOM.loadingBar.style.display = 'none';
-                        DOM.deviceSelect.style.display = 'block';
-                        DOM.deviceSelect.style.animation = 'fadeIn 2s forwards';
-                    }, 5100);
-
-                    DOM.btnPC.addEventListener('click', () => this.startGame('pc'));
-                    DOM.btnMobile.addEventListener('click', () => this.startGame('mobile'));
-                },
-
-                startGame(device) {
-                    this.device = device;
-                    AudioManager.init();
-                    
-                    if (device === 'mobile') {
-                        document.querySelectorAll('.mobile-only').forEach(el => el.style.display = 'block');
-                    } else {
-                        document.querySelectorAll('.pc-only').forEach(el => el.style.display = 'block');
-                    }
-
-                    DOM.pillsHUD.style.display = 'flex';
-                    this.showScreen('room');
-                    this.startGameLoop();
-                },
-
-                showScreen(screenName) {
-                    Object.values(DOM.screens).forEach(s => s.classList.remove('active'));
-                    if (DOM.screens[screenName]) {
-                        DOM.screens[screenName].classList.add('active');
-                        this.currentView = screenName;
-                    }
-                },
-
-                startGameLoop() {
-                    if (this.gameRunning) return;
+                
+                start() {
                     this.gameRunning = true;
-
+                    this.gameOver = false;
                     PanicManager.start();
                     UIManager.start();
-                    
-                    // Random ambient events (more frequent)
-                    this.timers.ambient = setTimeout(this.triggerRandomEvent, 15000 + Math.random() * 20000); // 15-35s
-                },
-
-                stopGameLoop() {
-                    this.gameRunning = false;
-                    Object.values(this.timers).forEach(timer => {
-                        if (timer) clearInterval(timer);
-                        if (timer) clearTimeout(timer);
-                    });
-                    PanicManager.stop();
-                    UIManager.stop();
+                    AudioManager.startKnockTimer();
+                    AudioManager.updateRoomState();
                 },
                 
-                triggerRandomEvent() {
-                    if (Game.gameOver) return;
-                    
-                    // Visual flicker
-                    const flicker = $('flicker-overlay');
-                    flicker.style.animation = 'none';
-                    void flicker.offsetWidth; // Trigger reflow
-                    flicker.style.animation = 'flicker 0.2s 1 step-end';
-                    
-                    // Random sound
-                    if (Math.random() > 0.3) {
-                        AudioManager.playCreak();
-                    } else if (Math.random() > 0.5) {
-                        AudioManager.playStatic();
-                    }
-
-                    // Reschedule (more frequent)
-                    Game.timers.ambient = setTimeout(Game.triggerRandomEvent, 20000 + Math.random() * 20000); // 20-40s
+                stop() {
+                    this.gameRunning = false;
+                    PanicManager.stop();
+                    UIManager.stop();
+                    PCManager.stopPCClock();
+                    TaskManager.clearTask();
+                    AudioManager.stopAll();
+                    clearInterval(this.timers.knock);
                 },
-
+                
                 win() {
                     if (this.gameOver) return;
-                    console.log("YOU WIN");
                     this.gameOver = true;
-                    this.stopGameLoop();
-                    AudioManager.stopAll();
-
-                    PCManager.leavePCView();
+                    this.stop();
+                    switchScreen('win');
+                    
                     setTimeout(() => {
-                        this.showScreen('win');
-                    }, 1500); // Wait for zoom out
+                        AudioManager.triggerJumpscare();
+                    }, 3000);
                 },
                 
                 lose() {
                     if (this.gameOver) return;
-                    console.log("GAME OVER");
                     this.gameOver = true;
-                    this.stopGameLoop();
-
-                    // Reset all visuals
-                    DOM.gameContainer.className = '';
-                    DOM.panicOverlay.style.opacity = 0;
-                    Object.values(DOM.screens).forEach(s => s.classList.remove('active'));
-
-                    // Stop all audio
-                    AudioManager.stopAll();
-                    
-                    // Play jumpscare
-                    DOM.jumpscareVideo.style.display = 'block';
-                    DOM.jumpscareVideo.currentTime = 0;
-                    DOM.jumpscareVideo.play().catch(e => {
-                        console.error("Jumpscare video failed to play", e);
-                        this.showGameOverScreen(); // Fallback
-                    });
+                    this.stop();
+                    switchScreen('gameOver');
                 },
-
-                showGameOverScreen() {
-                    DOM.jumpscareVideo.style.display = 'none';
-                    this.showScreen('gameOver');
+                
+                restart() {
+                    this.pills = 5;
+                    this.tasksCompleted = 0;
+                    this.pcOn = true;
+                    this.pcRebooting = false;
+                    this.currentPCView = 'tasks';
+                    DOM.taskCount.textContent = this.tasksTotal;
+                    DOM.pillCounter.textContent = this.pills;
+                    
+                    document.querySelectorAll('.pill').forEach(pill => {
+                        pill.classList.remove('collected');
+                    });
+                    
+                    PanicManager.panic = 30;
+                    PanicManager.highPanicActive = false;
+                    PanicManager.extremePanicActive = false;
+                    DOM.gameContainer.classList.remove('high-panic-blur', 'high-panic-shake', 'extreme-panic-filter');
+                    DOM.panicOverlay.style.opacity = 0;
+                    
+                    TaskManager.currentTask = null;
+                    
+                    switchScreen('room');
+                    this.start();
                 }
             };
 
-            // --- AUDIO HANDLING ---
             const AudioManager = {
-                audioCtx: null,
-                ambientHum: null,
-                breathing: DOM.audioBreathing,
-
+                breathingVolume: 1.0,
+                
                 init() {
-                    if (this.audioCtx) return;
-                    try {
-                        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                        
-                        // Create low ambient hum
-                        const oscillator = this.audioCtx.createOscillator();
-                        const gainNode = this.audioCtx.createGain();
-                        oscillator.type = 'sine';
-                        oscillator.frequency.setValueAtTime(50, this.audioCtx.currentTime); // 50Hz hum
-                        gainNode.gain.setValueAtTime(0.02, this.audioCtx.currentTime); // Very quiet
-                        oscillator.connect(gainNode).connect(this.audioCtx.destination);
-                        oscillator.start();
-                        this.ambientHum = oscillator;
-
-                        // Prepare other sounds
-                        this.breathing.play().then(() => this.breathing.pause()).catch(e => {});
-                        DOM.jumpscareVideo.load();
-
-                    } catch (e) {
-                        console.error("Web Audio API is not supported in this browser", e);
-                    }
+                    DOM.audioBreathing.volume = 0;
+                    DOM.audioPowerOn.volume = 0.15;
+                    DOM.audioPowerOff.volume = 0.2;
+                    DOM.audioKnock.volume = 0.7;
                 },
                 
-                playOneShot(type) {
-                    if (!this.audioCtx) return;
-                    try {
-                        let duration, buffer, data;
-                        const sampleRate = this.audioCtx.sampleRate;
-                        
-                        if (type === 'creak') {
-                            duration = Math.random() * 0.3 + 0.2;
-                            buffer = this.audioCtx.createBuffer(1, sampleRate * duration, sampleRate);
-                            data = buffer.getChannelData(0);
-                            for (let i = 0; i < data.length; i++) {
-                                data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) * 0.1; // Fading noise
-                            }
-                            
-                            const noise = this.audioCtx.createBufferSource();
-                            noise.buffer = buffer;
-                            const bqFilter = this.audioCtx.createBiquadFilter();
-                            bqFilter.type = "lowpass";
-                            bqFilter.frequency.setValueAtTime(600 + Math.random() * 400, this.audioCtx.currentTime);
-                            noise.connect(bqFilter).connect(this.audioCtx.destination);
-                            noise.start();
-                        }
-                        else if (type === 'static') {
-                            duration = 0.15;
-                            buffer = this.audioCtx.createBuffer(1, sampleRate * duration, sampleRate);
-                            data = buffer.getChannelData(0);
-                            for (let i = 0; i < data.length; i++) {
-                                data[i] = (Math.random() * 2 - 1) * 0.05; // White noise
-                            }
-                            const staticNoise = this.audioCtx.createBufferSource();
-                            staticNoise.buffer = buffer;
-                            staticNoise.connect(this.audioCtx.destination);
-                            staticNoise.start();
-                        }
-
-                    } catch(e) { console.warn("Could not play sound", e); }
-                },
-
-                playCreak() { this.playOneShot('creak'); },
-                playStatic() { this.playOneShot('static'); },
-
                 startBreathing() {
-                    this.breathing.currentTime = 0;
-                    this.breathing.volume = 0.8; // Start louder
-                    this.breathing.play().catch(e => console.warn("Breathing audio failed"));
+                    DOM.audioBreathing.volume = this.breathingVolume;
+                    DOM.audioBreathing.play().catch(e => console.log('Audio play failed:', e));
+                },
+                
+                stopBreathing() {
+                    DOM.audioBreathing.pause();
+                    DOM.audioBreathing.volume = 0;
                 },
                 
                 setBreathingVolume(vol) {
-                    this.breathing.volume = vol;
+                    this.breathingVolume = vol;
+                    DOM.audioBreathing.volume = vol;
                 },
-
-                stopBreathing() {
-                    this.breathing.pause();
+                
+                startPowerOnSound() {
+                    DOM.audioPowerOn.play().catch(e => console.log('PowerOn audio failed:', e));
                 },
-
+                
+                stopPowerOnSound() {
+                    DOM.audioPowerOn.pause();
+                    DOM.audioPowerOn.currentTime = 0;
+                },
+                
+                playPowerOffSound() {
+                    DOM.audioPowerOff.play().catch(e => console.log('PowerOff audio failed:', e));
+                },
+                
+                updateRoomState() {
+                    if (Game.pcOn) {
+                        DOM.screens.room.classList.remove('pc-off-state');
+                        DOM.screens.room.classList.add('pc-on-state');
+                        this.startPowerOnSound();
+                    } else {
+                        DOM.screens.room.classList.remove('pc-on-state');
+                        DOM.screens.room.classList.add('pc-off-state');
+                        this.stopPowerOnSound();
+                    }
+                },
+                
+                startKnockTimer() {
+                    const playKnock = () => {
+                        if (!Game.gameOver && Game.gameRunning) {
+                            DOM.audioKnock.currentTime = 0;
+                            DOM.audioKnock.play().catch(e => console.log('Knock audio failed:', e));
+                        }
+                        
+                        const nextInterval = 60000 + Math.random() * 120000;
+                        Game.timers.knock = setTimeout(playKnock, nextInterval);
+                    };
+                    
+                    const firstInterval = 60000 + Math.random() * 120000;
+                    Game.timers.knock = setTimeout(playKnock, firstInterval);
+                },
+                
+                triggerJumpscare() {
+                    DOM.jumpscareVideo.style.display = 'block';
+                    DOM.jumpscareVideo.play().catch(e => {
+                        console.log('Jumpscare video failed:', e);
+                        DOM.jumpscareVideo.style.display = 'none';
+                    });
+                    
+                    DOM.jumpscareVideo.addEventListener('ended', () => {
+                        DOM.jumpscareVideo.style.display = 'none';
+                    }, { once: true });
+                },
+                
                 stopAll() {
                     this.stopBreathing();
-                    if (this.ambientHum) this.ambientHum.stop();
+                    this.stopPowerOnSound();
+                    clearTimeout(Game.timers.knock);
                 }
             };
 
-            // --- PANIC SYSTEM ---
             const PanicManager = {
-                panic: 0,
+                panic: 30,
                 highPanicActive: false,
                 extremePanicActive: false,
                 
@@ -937,33 +895,23 @@
                 stop() {
                     clearInterval(Game.timers.panic);
                 },
-
+                
                 update() {
-                    if (Game.gameOver || Game.pcRebooting) return;
-
-                    let panicIncrease = 0.2; // More aggressive
-                    if (Game.pills <= 2) panicIncrease = 0.35;
-                    if (Game.pills === 0) panicIncrease = 0.6; // More aggressive
-                    if (Game.currentView === 'pc' && Game.pcOn) panicIncrease *= 2.5; // More aggressive
-
-                    if (!Game.pcOn && Game.currentView === 'room') {
-                        this.panic = Math.max(0, this.panic - 0.2);
+                    if (Game.gameOver) return;
+                    
+                    if (Game.pcOn) {
+                        this.panic += 0.3;
                     } else {
-                        this.panic = Math.min(100, this.panic + panicIncrease);
+                        this.panic = Math.max(0, this.panic - 0.5);
                     }
                     
+                    this.panic = Math.min(100, this.panic);
                     this.checkState();
                 },
-
+                
                 checkState() {
-                    // Level 1: Subtle Vignette
-                    if (this.panic >= 60) {
-                        DOM.panicOverlay.style.opacity = (this.panic - 60) / 40 * 0.5; // 0 to 0.5
-                    } else {
-                        DOM.panicOverlay.style.opacity = 0;
-                    }
-
-                    // Level 2: High Panic (Breathing, Blur, Shake) - Starts earlier
+                    DOM.panicOverlay.style.opacity = Math.max(0, this.panic - 50) / 50 * 0.3;
+                    
                     if (this.panic >= 75 && !this.highPanicActive) {
                         this.highPanicActive = true;
                         AudioManager.startBreathing();
@@ -972,13 +920,12 @@
                         UIManager.showTip("The breathing is getting closer...");
                     } else if (this.panic < 75 && this.highPanicActive) {
                         this.highPanicActive = false;
-                        this.extremePanicActive = false; // Also reset extreme
+                        this.extremePanicActive = false;
                         AudioManager.stopBreathing();
                         DOM.gameContainer.classList.remove('high-panic-blur', 'high-panic-shake', 'extreme-panic-filter');
                         DOM.panicOverlay.style.background = 'radial-gradient(circle, transparent 70%, rgba(0,0,0,0) 80%, rgba(255,0,0,0.1) 95%)';
                     }
 
-                    // Level 3: Extreme Panic - Starts earlier
                     if (this.panic >= 85 && !this.extremePanicActive) {
                         this.extremePanicActive = true;
                         DOM.gameContainer.classList.add('extreme-panic-filter');
@@ -987,10 +934,8 @@
                         DOM.gameContainer.classList.remove('extreme-panic-filter');
                     }
                     
-                    // Adjust effects based on panic
                     if(this.highPanicActive) {
                         DOM.panicOverlay.style.opacity = 0.4 + (this.panic - 75) / 25 * 0.6;
-                        // Volume ramp from 0.8 to 1.0
                         AudioManager.setBreathingVolume(0.8 + (this.panic - 75) / 25 * 0.2);
                     }
 
@@ -1002,15 +947,14 @@
                 takePill() {
                     if (Game.pills > 0 && !Game.gameOver) {
                         Game.pills--;
-                        DOM.pillCount.textContent = Game.pills;
-                        this.panic = Math.max(0, this.panic - 40); // Significant reduction
+                        DOM.pillCounter.textContent = Game.pills;
+                        this.panic = Math.max(0, this.panic - 40);
                         
-                        // Jolt effect
                         DOM.gameContainer.style.transition = 'transform 0.1s';
                         DOM.gameContainer.style.transform = 'scale(1.02)';
                         setTimeout(() => DOM.gameContainer.style.transform = 'scale(1)', 100);
 
-                        this.checkState(); // Update visuals immediately
+                        this.checkState();
                         
                         if (Game.pills === 0) {
                             UIManager.showTip("You are out of pills... you're on your own.");
@@ -1019,7 +963,6 @@
                 }
             };
             
-            // --- UI & HUD ---
             const UIManager = {
                 start() {
                     Game.timers.tip = setInterval(this.showRandomTip.bind(this), 35000);
@@ -1045,7 +988,6 @@
                 }
             };
             
-            // --- ROOM & PC INTERACTIONS ---
             const PCManager = {
                 pcClockTimer: null,
                 
@@ -1060,7 +1002,6 @@
                     
                     DOM.pcPowerOff.addEventListener('click', this.turnOffPC.bind(this));
                     
-                    // Sidebar navigation
                     DOM.pcSidebar.addEventListener('click', (e) => {
                         if (e.target.classList.contains('pc-icon')) {
                             this.navigate(e.target.dataset.view);
@@ -1102,7 +1043,6 @@
                     if (Game.currentView === 'pc' || Game.gameOver) return;
 
                     Game.currentView = 'pc';
-                    // Updated transform to aim at the new, higher hotspot
                     DOM.screens.room.style.transform = "scale(3.5) translate(-15%, -25%)"; 
                     DOM.screens.room.style.opacity = 0.5;
                     DOM.screens.pc.classList.add('active');
@@ -1116,7 +1056,7 @@
                     } else {
                         DOM.pcDesktop.style.display = 'flex';
                         DOM.pcRebooting.style.display = 'none';
-                        this.navigate(Game.currentPCView); // Load current view
+                        this.navigate(Game.currentPCView);
                         this.startPCClock();
                     }
                 },
@@ -1129,15 +1069,17 @@
                     DOM.screens.room.style.opacity = 1;
                     DOM.screens.pc.classList.remove('active');
                     this.stopPCClock();
-                    TaskManager.clearTask(); // Stop any running task intervals
+                    TaskManager.clearTask();
                 },
 
                 turnOffPC() {
                     if (!Game.pcOn) return;
                     Game.pcOn = false;
                     TaskManager.clearTask();
-                    TaskManager.currentTask = null; // <-- BUG FIX: Clear current task
+                    TaskManager.currentTask = null;
                     UIManager.showTip("PC shutting down. Things feel... quieter.");
+                    AudioManager.playPowerOffSound();
+                    AudioManager.updateRoomState();
                     this.leavePCView();
                 },
 
@@ -1145,7 +1087,7 @@
                     if (Game.pcRebooting) return;
                     Game.pcRebooting = true;
                     
-                    const rebootDuration = 15000; // 15 seconds (was 30)
+                    const rebootDuration = 15000;
                     DOM.rebootBarFill.style.transition = `width ${rebootDuration}ms linear`;
                     DOM.rebootBarFill.style.width = '100%';
 
@@ -1154,6 +1096,7 @@
                         Game.pcRebooting = false;
                         DOM.rebootBarFill.style.transition = 'none';
                         DOM.rebootBarFill.style.width = '0%';
+                        AudioManager.updateRoomState();
 
                         if (Game.currentView === 'pc') {
                             DOM.pcDesktop.style.display = 'flex';
@@ -1181,7 +1124,6 @@
                 }
             };
             
-            // --- TASK MANAGEMENT ---
             const TaskManager = {
                 currentTask: null,
                 currentTaskCleanup: null,
@@ -1197,16 +1139,13 @@
                     if (Game.currentPCView !== 'tasks') return;
                     
                     if (this.currentTask) {
-                        // Task in progress, re-render it
                         const initFunc = this.taskImplementations[this.currentTask.init];
                         if(initFunc) {
                             initFunc.call(this.taskImplementations);
                         } else {
-                            // Task is stale or bad, load next
                             this.loadNextTask();
                         }
                     } else {
-                        // Load next task
                         this.loadNextTask();
                     }
                 },
@@ -1221,12 +1160,11 @@
                     DOM.taskContainer.innerHTML = '<h3>Loading new task...</h3>';
                     
                     setTimeout(() => {
-                        if (Game.currentPCView !== 'tasks') return; // User navigated away
+                        if (Game.currentPCView !== 'tasks') return;
                         
                         const taskIndex = Game.tasksCompleted % this.tasks.length;
                         this.currentTask = this.tasks[taskIndex];
                         
-                        // Dynamically call the init function by its name
                         const initFunc = this.taskImplementations[this.currentTask.init];
                         if(initFunc) {
                             initFunc.call(this.taskImplementations);
@@ -1245,7 +1183,7 @@
                 },
 
                 completeTask: function() {
-                    if (Game.gameOver) return; // Prevent calls after game end
+                    if (Game.gameOver) return;
                     this.clearTask();
                     
                     Game.tasksCompleted++;
@@ -1253,7 +1191,6 @@
                     DOM.taskCount.textContent = Game.tasksTotal - Game.tasksCompleted;
                     DOM.taskContainer.innerHTML = `<h2 style="color: #0f0;">TASK COMPLETE.</h2><p>Calibrating next module...</p>`;
                     
-                    // Give a small panic reward
                     PanicManager.panic = Math.max(0, PanicManager.panic - 5);
                     
                     setTimeout(() => {
@@ -1263,7 +1200,6 @@
                     }, 2000);
                 },
 
-                // --- TASK IMPLEMENTATIONS ---
                 taskImplementations: {
                     task_typeCode() {
                         const code = Array(15).fill(0).map(() => "abcdefghijklmnopqrstuvwxyz0123456789".charAt(Math.floor(Math.random() * 36))).join('');
@@ -1304,7 +1240,13 @@
                         const timeoutId = setTimeout(() => {
                             const targetIndex = Math.floor(Math.random() * squares.length);
                             squares[targetIndex].classList.add('target');
-                            squares[targetIndex].addEventListener('click', () => TaskManager.completeTask(), { once: true });
+                            
+                            const clickHandler = () => TaskManager.completeTask();
+                            squares[targetIndex].addEventListener('click', clickHandler, { once: true });
+                            squares[targetIndex].addEventListener('touchend', (e) => {
+                                e.preventDefault();
+                                clickHandler();
+                            }, { once: true });
                         }, 1500 + Math.random() * 3000);
 
                         TaskManager.currentTaskCleanup = () => {
@@ -1317,7 +1259,7 @@
                         DOM.taskContainer.innerHTML = `
                             <p class="task-description">DATA FRAGMENT RECOVERY: Collect all dots (<strong>.</strong>). Avoid the <strong>G</strong>host.</p>
                             <div id="task-pacman-grid"></div>
-                            <p>Use <strong>Arrow Keys</strong> or <strong>W,A,S,D</strong> to move.</p>
+                            <p>Use <strong>Arrow Keys</strong> or <strong>W,A,S,D</strong> to move. On mobile, swipe to move.</p>
                         `;
                         
                         const gridEl = $('task-pacman-grid');
@@ -1360,8 +1302,7 @@
                             }
                             
                             if (player.x === ghost.x && player.y === ghost.y) {
-                                // Caught, reset
-                                TaskManager.loadCurrentTask(); // Just reload
+                                TaskManager.loadCurrentTask();
                             }
                             
                             moveGhost();
@@ -1372,12 +1313,11 @@
                             const dx = Math.sign(player.x - ghost.x);
                             const dy = Math.sign(player.y - ghost.y);
                             
-                            // Simple random move
-                            const move = Math.random() > 0.5 ? 'x' : 'y';
-                            if (move === 'x' && grid[ghost.y][ghost.x + dx] !== '#') ghost.x += dx;
-                            else if (move === 'y' && grid[ghost.y + dy][ghost.x] !== '#') ghost.y += dy;
-                            else if (grid[ghost.y][ghost.x + dx] !== '#') ghost.x += dx; // fallback
-                            else if (grid[ghost.y + dy][ghost.x] !== '#') ghost.y += dy; // fallback
+                            const moveDir = Math.random() > 0.5 ? 'x' : 'y';
+                            if (moveDir === 'x' && grid[ghost.y][ghost.x + dx] !== '#') ghost.x += dx;
+                            else if (moveDir === 'y' && grid[ghost.y + dy][ghost.x] !== '#') ghost.y += dy;
+                            else if (grid[ghost.y][ghost.x + dx] !== '#') ghost.x += dx;
+                            else if (grid[ghost.y + dy][ghost.x] !== '#') ghost.y += dy;
                             
                             if (player.x === ghost.x && player.y === ghost.y) {
                                 TaskManager.loadCurrentTask();
@@ -1387,16 +1327,42 @@
                         const keyHandler = (e) => {
                             e.preventDefault();
                             switch(e.key) {
-                                case 'ArrowUp': case 'w': move(0, -1); break;
-                                case 'ArrowDown': case 's': move(0, 1); break;
-                                case 'ArrowLeft': case 'a': move(-1, 0); break;
-                                case 'ArrowRight': case 'd': move(1, 0); break;
+                                case 'ArrowUp': case 'w': case 'W': move(0, -1); break;
+                                case 'ArrowDown': case 's': case 'S': move(0, 1); break;
+                                case 'ArrowLeft': case 'a': case 'A': move(-1, 0); break;
+                                case 'ArrowRight': case 'd': case 'D': move(1, 0); break;
+                            }
+                        };
+                        
+                        let touchStartX = 0;
+                        let touchStartY = 0;
+                        const touchStart = (e) => {
+                            touchStartX = e.touches[0].clientX;
+                            touchStartY = e.touches[0].clientY;
+                        };
+                        const touchEnd = (e) => {
+                            const touchEndX = e.changedTouches[0].clientX;
+                            const touchEndY = e.changedTouches[0].clientY;
+                            const dx = touchEndX - touchStartX;
+                            const dy = touchEndY - touchStartY;
+                            
+                            if (Math.abs(dx) > Math.abs(dy)) {
+                                if (dx > 20) move(1, 0);
+                                else if (dx < -20) move(-1, 0);
+                            } else {
+                                if (dy > 20) move(0, 1);
+                                else if (dy < -20) move(0, -1);
                             }
                         };
                         
                         document.addEventListener('keydown', keyHandler);
+                        gridEl.addEventListener('touchstart', touchStart);
+                        gridEl.addEventListener('touchend', touchEnd);
+                        
                         TaskManager.currentTaskCleanup = () => {
                             document.removeEventListener('keydown', keyHandler);
+                            gridEl.removeEventListener('touchstart', touchStart);
+                            gridEl.removeEventListener('touchend', touchEnd);
                         };
                         drawGrid();
                     },
@@ -1408,16 +1374,33 @@
                                 <div id="task-stabilize-target"></div>
                                 <div id="task-stabilize-bar"></div>
                             </div>
-                            <p>Press <strong>Spacebar</strong> to apply counter-thrust.</p>
+                            <p>Press <strong>Spacebar</strong> or <strong>Tap Screen</strong> to apply counter-thrust.</p>
                         `;
                         
                         const bar = $('task-stabilize-bar');
-                        let pos = 50; // %
+                        const container = $('task-stabilize-container');
+                        let pos = 50;
                         let velocity = 0;
                         let gravity = 0.08;
                         let thrust = -0.3;
                         let timeInZone = 0;
-                        const targetTime = 5000; // 5 seconds
+                        const targetTime = 5000;
+                        
+                        function applyThrust() {
+                            velocity += thrust;
+                        }
+                        
+                        const keyHandler = (e) => {
+                            if (e.code === 'Space') {
+                                e.preventDefault();
+                                applyThrust();
+                            }
+                        };
+                        
+                        const touchHandler = (e) => {
+                            e.preventDefault();
+                            applyThrust();
+                        };
                         
                         let interval = setInterval(() => {
                             velocity += gravity;
@@ -1428,7 +1411,6 @@
                             
                             bar.style.left = `${pos}%`;
                             
-                            // Check if in zone
                             if (pos > 42.5 && pos < 57.5) {
                                 timeInZone += 20;
                                 DOM.taskContainer.querySelector('.task-description').innerHTML = `CORE OSCILLATOR: ... ${((timeInZone / targetTime) * 100).toFixed(0)}%`;
@@ -1436,43 +1418,73 @@
                                     TaskManager.completeTask();
                                 }
                             } else {
-                                timeInZone = 0; // Reset
+                                timeInZone = 0;
                             }
-                            
                         }, 20);
                         
-                        const keyHandler = (e) => {
-                            if (e.key === ' ' || e.code === 'Space') {
-                                e.preventDefault();
-                                velocity += thrust;
-                            }
-                        };
-                        
                         document.addEventListener('keydown', keyHandler);
+                        container.addEventListener('touchstart', touchHandler);
+                        container.addEventListener('click', applyThrust);
                         
                         TaskManager.currentTaskCleanup = () => {
                             clearInterval(interval);
                             document.removeEventListener('keydown', keyHandler);
+                            container.removeEventListener('touchstart', touchHandler);
+                            container.removeEventListener('click', applyThrust);
                         };
                     }
                 }
             };
 
-            // --- EVENT LISTENERS ---
-            DOM.pillsHUD.addEventListener('click', () => PanicManager.takePill());
-            DOM.jumpscareVideo.addEventListener('ended', () => Game.showGameOverScreen());
-            DOM.jumpscareVideo.addEventListener('error', () => Game.showGameOverScreen());
-            $('restart-btn').addEventListener('click', () => location.reload());
-            $('restart-btn-win').addEventListener('click', () => location.reload());
-            
-            // --- START GAME ---
-            PCManager.init();
-            TaskManager.taskImplementations.task_typeCode = TaskManager.taskImplementations.task_typeCode.bind(TaskManager);
-            TaskManager.taskImplementations.task_clickReaction = TaskManager.taskImplementations.task_clickReaction.bind(TaskManager);
-            TaskManager.taskImplementations.task_pacman = TaskManager.taskImplementations.task_pacman.bind(TaskManager);
-            TaskManager.taskImplementations.task_stabilize = TaskManager.taskImplementations.task_stabilize.bind(TaskManager);
-            Game.init();
+            function switchScreen(screenName) {
+                Object.values(DOM.screens).forEach(s => s.classList.remove('active'));
+                DOM.screens[screenName].classList.add('active');
+            }
 
+            function initDeviceSelection() {
+                setTimeout(() => {
+                    DOM.deviceSelect.style.opacity = 1;
+                    DOM.deviceSelect.style.display = 'block';
+                }, 5500);
+                
+                DOM.btnPC.addEventListener('click', () => {
+                    Game.device = 'pc';
+                    startGame();
+                });
+                
+                DOM.btnMobile.addEventListener('click', () => {
+                    Game.device = 'mobile';
+                    DOM.mobileBackBtn.style.display = 'block';
+                    startGame();
+                });
+            }
+
+            function startGame() {
+                switchScreen('room');
+                Game.start();
+            }
+
+            DOM.pillsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('pill') && !e.target.classList.contains('collected')) {
+                    e.target.classList.add('collected');
+                    PanicManager.takePill();
+                }
+            });
+
+            DOM.pillsContainer.addEventListener('touchend', (e) => {
+                if (e.target.classList.contains('pill') && !e.target.classList.contains('collected')) {
+                    e.preventDefault();
+                    e.target.classList.add('collected');
+                    PanicManager.takePill();
+                }
+            });
+
+            $('restart-btn').addEventListener('click', () => Game.restart());
+            $('restart-btn-win').addEventListener('click', () => Game.restart());
+
+            AudioManager.init();
+            PCManager.init();
+            initDeviceSelection();
         });
     </script>
 </body>
