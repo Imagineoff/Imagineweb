@@ -810,8 +810,8 @@
                     DOM.pillCounter.textContent = this.pills;
                     
                     PanicManager.panic = 30;
-                    PanicManager.highPanicActive = false;
-                    PanicManager.extremePanicActive = false;
+                    PanicManager.highPanicActive = true;
+                    PanicManager.extremePanicActive = true;
                     DOM.gameContainer.classList.remove('high-panic-blur', 'high-panic-shake', 'extreme-panic-filter');
                     DOM.panicOverlay.style.opacity = 0;
                     
